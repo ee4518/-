@@ -6,24 +6,12 @@
   <title>고척초등학교 기버데이 인생네컷</title>
   
   <style>
-    /* 1. 코트라 희망체 웹폰트 */
+    /* 코트라 희망체 단독 로드 (설치 불필요 웹폰트) */
     @font-face {
       font-family: 'KotraHope';
       src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/KOTRAHOPE.woff2') format('woff2');
       font-weight: normal;
       font-style: normal;
-    }
-
-    /* 2. 카페24 슈퍼매직 웹폰트 */
-    @font-face {
-      font-family: 'Cafe24Supermagic';
-      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/Cafe24Supermagic-Bold-v1.0.woff2') format('woff2');
-      font-weight: 700;
-      font-style: normal;
-    }
-
-    :root {
-      --current-font: 'KotraHope', 'Cafe24Supermagic', sans-serif;
     }
 
     * {
@@ -35,7 +23,7 @@
       padding: 10px 0;
       background-color: #1a1a24;
       color: #ffffff;
-      font-family: var(--current-font) !important;
+      font-family: 'KotraHope', sans-serif !important;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -49,19 +37,18 @@
       margin-bottom: 8px;
       color: #ffde59;
       text-shadow: 0 3px 10px rgba(0,0,0,0.6);
-      font-family: var(--current-font) !important;
+      font-family: 'KotraHope', sans-serif !important;
       letter-spacing: 0.5px;
     }
 
+    /* 상단 패널 (밝기 조절만 깔끔하게 유지) */
     .top-panel {
       display: flex;
-      flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 16px;
       margin-bottom: 12px;
       background: #282838;
-      padding: 10px 24px;
+      padding: 8px 24px;
       border-radius: 40px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     }
@@ -69,17 +56,17 @@
     .option-group {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 15px;
+      gap: 10px;
+      font-size: 16px;
+    }
+
+    button, .chip-btn, .btn-main, .btn-sub, .btn-modal {
+      font-family: 'KotraHope', sans-serif !important;
     }
 
     .chip-group {
       display: flex;
       gap: 6px;
-    }
-
-    button, .chip-btn, .btn-main, .btn-sub, .btn-modal {
-      font-family: var(--current-font) !important;
     }
 
     .chip-btn {
@@ -103,14 +90,13 @@
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
     .theme-animals  { background: #f3d9fa; color: #862e9c; }
 
-    .font-btn { background: #3e3e52; color: #e2e8f0; }
-
     input[type=range] {
-      width: 85px;
+      width: 100px;
       accent-color: #ffde59;
       cursor: pointer;
     }
 
+    /* 세로형 뷰어 부스 */
     .booth-container {
       position: relative;
       width: 440px;
@@ -221,7 +207,7 @@
     }
     .btn-sub:hover { background: #64748b; }
 
-    /* 결과 모달 */
+    /* 결과 & 배경 미리보기 모달 */
     .modal {
       position: fixed;
       top: 0;
@@ -243,7 +229,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.7);
     }
 
@@ -305,14 +291,14 @@
       font-size: 34px;
       margin: 0 0 14px 0;
       color: #0284c7;
-      font-family: var(--current-font) !important;
+      font-family: 'KotraHope', sans-serif !important;
     }
 
     .loading-card p {
       font-size: 22px;
       color: #475569;
       margin: 6px 0;
-      font-family: var(--current-font) !important;
+      font-family: 'KotraHope', sans-serif !important;
     }
 
     .spinner {
@@ -344,30 +330,10 @@
 
   <header>★ 고척초등학교 기버데이 포토부스 ★</header>
 
+  <!-- 4번 요구사항: '뽀샤시' 대신 '밝기' 단독 배치 (촬영 전 버튼 최소화) -->
   <div class="top-panel">
-    <!-- 프레임 선택 -->
     <div class="option-group">
-      <span>🎨 프레임:</span>
-      <div class="chip-group" id="themeChips">
-        <button class="chip-btn theme-ribbon active" data-theme="ribbon">🎀 하늘리본</button>
-        <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
-        <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
-        <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
-      </div>
-    </div>
-
-    <!-- 1번 요구사항: 폰트 2종으로 압축 (코트라희망체, 카페24슈퍼매직) -->
-    <div class="option-group">
-      <span>✍️ 글씨체:</span>
-      <div class="chip-group" id="fontChips">
-        <button class="chip-btn font-btn active" data-font="kotrahope">코트라 희망체</button>
-        <button class="chip-btn font-btn" data-font="supermagic">카페24 슈퍼매직</button>
-      </div>
-    </div>
-
-    <!-- 뽀샤시 -->
-    <div class="option-group">
-      <span>☀️ 뽀샤시:</span>
+      <span>☀️ 밝기:</span>
       <input type="range" id="brightnessRange" min="100" max="150" value="118">
       <span id="brightnessVal">118%</span>
     </div>
@@ -382,19 +348,24 @@
     <div id="flash" class="flash-screen"></div>
   </div>
 
+  <!-- 2번 요구사항: [배경 미리보기] 버튼 -->
   <div class="controls">
     <button id="btnStart" class="btn-main">📸 촬영 시작 (Space)</button>
-    <button id="btnPreview" class="btn-sub">🔍 프레임 미리보기</button>
+    <button id="btnPreview" class="btn-sub">🔍 배경 미리보기</button>
   </div>
 
-  <!-- 결과 팝업 -->
+  <!-- 결과 & 배경 선택/미리보기 모달 -->
   <div id="resultModal" class="modal">
     <div class="modal-content">
-      <div class="chip-group" id="modalThemeChips">
-        <button class="chip-btn theme-ribbon" data-theme="ribbon">🎀 하늘리본</button>
-        <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
-        <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
-        <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
+      <!-- 팝업 내부에서 원하는 배경을 클릭해 전환 -->
+      <div class="option-group" style="margin-bottom: 2px;">
+        <span style="font-size: 16px;">🎨 배경 선택:</span>
+        <div class="chip-group" id="modalThemeChips">
+          <button class="chip-btn theme-ribbon active" data-theme="ribbon">🎀 하늘리본</button>
+          <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
+          <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
+          <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
+        </div>
       </div>
 
       <canvas id="previewCanvas" width="1200" height="1800"></canvas>
@@ -433,14 +404,10 @@
       countdownSec: 5
     };
 
-    // 1번 요구사항: 폰트 매핑 (2종)
-    const FONT_MAP = {
-      kotrahope: "'KotraHope', sans-serif",
-      supermagic: "'Cafe24Supermagic', sans-serif"
-    };
+    // 3번 요구사항: 코트라 희망체 단독 적용
+    const APP_FONT = "'KotraHope', sans-serif";
 
     let currentTheme = 'ribbon';
-    let currentFontKey = 'kotrahope';
     let brightnessMultiplier = 1.18;
 
     const video = document.getElementById('webcam');
@@ -461,27 +428,7 @@
     let capturedFrames = [];
     let isRunning = false;
 
-    function applyFontToUIAndCanvas(fontKey) {
-      currentFontKey = fontKey;
-      const fontValue = FONT_MAP[fontKey];
-
-      document.documentElement.style.setProperty('--current-font', fontValue);
-      document.body.style.fontFamily = fontValue;
-
-      drawPhotoStrip();
-    }
-
-    document.getElementById('fontChips').addEventListener('click', (e) => {
-      const btn = e.target.closest('.chip-btn');
-      if (!btn) return;
-
-      document.querySelectorAll('#fontChips .chip-btn').forEach(b => {
-        b.classList.toggle('active', b === btn);
-      });
-
-      applyFontToUIAndCanvas(btn.dataset.font);
-    });
-
+    // 밝기 조절 이벤트
     function updateVideoFilter() {
       video.style.filter = `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05)`;
     }
@@ -493,22 +440,20 @@
       drawPhotoStrip();
     });
 
-    function syncThemeButtons() {
-      document.querySelectorAll('#themeChips .chip-btn, #modalThemeChips .chip-btn').forEach(b => {
+    // 모달창 내부 테마 변경 이벤트
+    document.getElementById('modalThemeChips').addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      currentTheme = btn.dataset.theme;
+
+      document.querySelectorAll('#modalThemeChips .chip-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.theme === currentTheme);
       });
-    }
 
-    [document.getElementById('themeChips'), document.getElementById('modalThemeChips')].forEach(container => {
-      container.addEventListener('click', (e) => {
-        const btn = e.target.closest('.chip-btn');
-        if (!btn) return;
-        currentTheme = btn.dataset.theme;
-        syncThemeButtons();
-        drawPhotoStrip();
-      });
+      drawPhotoStrip();
     });
 
+    // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
     btnPreview.addEventListener('click', () => {
       drawPhotoStrip();
       modal.style.display = 'flex';
@@ -603,7 +548,7 @@
     }
 
     // ==========================================
-    // 손그림 드로잉 함수 (중심점 0,0 기준 대칭 보정)
+    // 손그림 드로잉 함수
     // ==========================================
     function drawDoodleRibbon(ctx, x, y, scale = 0.65, angle = 0, color = "#94c2ec") {
       ctx.save();
@@ -655,7 +600,6 @@
       ctx.restore();
     }
 
-    // 3번 요구사항: 하트의 중심(0,0)을 정확히 기준점으로 잡아 위로 쏠림 방지
     function drawDoodleHeart(ctx, x, y, size = 38, angle = 0, color = "#ff7597") {
       ctx.save();
       ctx.translate(x, y - (size * 0.45));
@@ -685,7 +629,6 @@
       ctx.restore();
     }
 
-    // 3번 요구사항: 축제 아이템 기준점 중심 정렬
     function drawDoodlePartyItem(ctx, x, y, type, color, angle = 0) {
       ctx.save();
       ctx.translate(x, y);
@@ -742,7 +685,6 @@
       ctx.restore();
     }
 
-    // 3번 요구사항: 동물 중심 정렬
     function drawDoodleAnimal(ctx, x, y, type, angle = 0) {
       ctx.save();
       ctx.translate(x, y);
@@ -798,7 +740,6 @@
     function drawPhotoStrip() {
       ctx.filter = "none";
 
-      // ★ 3번 요구사항: 상하좌우 완벽 대칭 좌표 (y=900 정중앙 대칭, 상단 여백 80px = 하단 여백 80px)
       const symRowA = [85, 340, 600, 860, 1115];
       const symRowB = [210, 470, 730, 990];
       const yPositions = [80, 240, 390, 540, 690, 840, 960, 1110, 1260, 1410, 1560, 1720];
@@ -870,7 +811,7 @@
         });
       }
 
-      // ★ 2번 요구사항: 둥근 모서리 없이 깔끔한 '직각 사각형'으로 4컷 사진 렌더링
+      // 사각형 4컷 사진 렌더링
       const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
       const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
       const positions = [
@@ -889,12 +830,10 @@
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 4;
 
-        // 사각형 바탕 흰색 판
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
         ctx.restore();
 
-        // 사각형 사진 영역 클리핑
         ctx.save();
         ctx.beginPath();
         ctx.rect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
@@ -907,22 +846,20 @@
           ctx.fillStyle = "#f6f8fb";
           ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
           ctx.fillStyle = "#94a3b8";
-          ctx.font = `34px ${FONT_MAP[currentFontKey]}`;
+          ctx.font = `34px ${APP_FONT}`;
           ctx.textAlign = "center";
           ctx.fillText(`사진 ${index + 1} 들어가는 곳`, pos.x + CONFIG.photoWidth / 2, pos.y + CONFIG.photoHeight / 2);
         }
         ctx.restore();
 
-        // 사각형 화이트 테두리 선
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 8;
         ctx.strokeRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
       });
 
-      // 하단 문구
+      // 하단 문구 렌더링
       const bannerTop = row2Y + CONFIG.photoHeight + 35;
       const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2) - 8;
-      const selectedFont = FONT_MAP[currentFontKey];
 
       ctx.textAlign = "center";
 
@@ -940,22 +877,14 @@
         subTextColor  = "#8b5e3c";
       }
 
-      ctx.lineJoin = "round";
-      ctx.miterLimit = 2;
-
-      // 윗줄 문구
-      ctx.font = `bold 74px ${selectedFont}`;
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 16;
-      ctx.strokeText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 26);
+      // ★ 1번 요구사항: 흰색 외곽선(strokeText) 완전히 빼고 깔끔하게 렌더링
+      // 윗줄: 74px 대형 폰트
+      ctx.font = `bold 74px ${APP_FONT}`;
       ctx.fillStyle = mainTextColor;
       ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 26);
 
-      // 아랫줄 날짜
-      ctx.font = `bold 54px ${selectedFont}`;
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 12;
-      ctx.strokeText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
+      // 아랫줄: 54px 대형 폰트
+      ctx.font = `bold 54px ${APP_FONT}`;
       ctx.fillStyle = subTextColor;
       ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
     }
@@ -1005,7 +934,7 @@
     });
 
     document.fonts.ready.then(() => {
-      applyFontToUIAndCanvas('kotrahope');
+      drawPhotoStrip();
     });
 
     initCamera();
