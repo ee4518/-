@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>고척초등학교 기버데이 인생네컷</title>
+  <!-- 둥근 손글씨 폰트(Jua) 불러오기 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
   <style>
     * {
       box-sizing: border-box;
@@ -14,7 +19,7 @@
       padding: 10px 0;
       background-color: #1a1a24;
       color: #ffffff;
-      font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+      font-family: 'Jua', 'Malgun Gothic', sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -24,24 +29,23 @@
     }
 
     header {
-      font-size: 26px;
-      font-weight: 900;
+      font-size: 28px;
       margin-bottom: 10px;
       color: #ffde59;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.6);
-      letter-spacing: -0.5px;
+      text-shadow: 0 3px 10px rgba(0,0,0,0.6);
+      letter-spacing: 0.5px;
     }
 
-    /* 상단 프레임 및 옵션 바 */
+    /* 상단 제어 바 */
     .top-panel {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       margin-bottom: 12px;
-      background: #282836;
-      padding: 10px 22px;
+      background: #282838;
+      padding: 10px 24px;
       border-radius: 40px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     }
@@ -50,36 +54,34 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
-      font-weight: bold;
+      font-size: 16px;
     }
 
     .frame-chips {
       display: flex;
       gap: 8px;
-      align-items: center;
     }
 
     .chip-btn {
+      font-family: 'Jua', sans-serif;
       border: 2px solid transparent;
-      padding: 6px 14px;
+      padding: 6px 15px;
       border-radius: 20px;
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 16px;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
     .chip-btn.active {
       border-color: #ffde59;
-      transform: scale(1.06);
+      transform: scale(1.08);
       box-shadow: 0 0 12px rgba(255, 222, 89, 0.7);
     }
 
     .chip-ribbon { background: #e3f2fd; color: #1971c2; }
     .chip-pink   { background: #ffd4df; color: #b01e4a; }
+    .chip-blue   { background: #d0ebff; color: #1864ab; }
     .chip-yellow { background: #ffec99; color: #d97706; }
-    .chip-upload { background: #4f46e5; color: #ffffff; }
 
     input[type=range] {
       width: 95px;
@@ -87,7 +89,7 @@
       cursor: pointer;
     }
 
-    /* 세로형 부스 컨테이너 */
+    /* 세로형 촬영 부스 */
     .booth-container {
       position: relative;
       width: 440px;
@@ -128,14 +130,12 @@
       color: #38d9a9;
       padding: 6px 18px;
       border-radius: 20px;
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 20px;
       display: none;
     }
 
     .countdown-text {
       font-size: 150px;
-      font-weight: 900;
       color: #ff2a5f;
       text-shadow: 0 0 30px rgba(0,0,0,0.9);
       opacity: 0;
@@ -161,15 +161,17 @@
 
     .controls {
       margin-top: 15px;
+      display: flex;
+      gap: 12px;
     }
 
     .btn-main {
+      font-family: 'Jua', sans-serif;
       background: linear-gradient(135deg, #0284c7, #0369a1);
       color: white;
       border: none;
-      padding: 14px 46px;
-      font-size: 21px;
-      font-weight: 900;
+      padding: 13px 45px;
+      font-size: 23px;
       border-radius: 40px;
       cursor: pointer;
       box-shadow: 0 6px 20px rgba(3, 105, 161, 0.5);
@@ -187,14 +189,29 @@
       box-shadow: none;
     }
 
-    /* 결과 모달 */
+    .btn-sub {
+      font-family: 'Jua', sans-serif;
+      background: #475569;
+      color: white;
+      border: none;
+      padding: 13px 24px;
+      font-size: 18px;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-sub:hover {
+      background: #64748b;
+    }
+
+    /* 결과 & 미리보기 모달 */
     .modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.92);
       display: none;
       justify-content: center;
       align-items: center;
@@ -227,10 +244,10 @@
     }
 
     .btn-modal {
+      font-family: 'Jua', sans-serif;
       border: none;
-      padding: 11px 22px;
-      font-size: 16px;
-      font-weight: bold;
+      padding: 10px 22px;
+      font-size: 17px;
       border-radius: 25px;
       cursor: pointer;
       color: white;
@@ -243,14 +260,14 @@
     .btn-close { background: #e11d48; }
     .btn-close:hover { background: #be123c; }
 
-    /* 인쇄 대기 팝업 */
+    /* 인쇄 대기 로딩 팝업 */
     .loading-modal {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.93);
+      background: rgba(0, 0, 0, 0.94);
       display: none;
       justify-content: center;
       align-items: center;
@@ -269,16 +286,15 @@
     }
 
     .loading-card h2 {
-      font-size: 32px;
+      font-size: 34px;
       margin: 0 0 14px 0;
       color: #0284c7;
     }
 
     .loading-card p {
-      font-size: 20px;
+      font-size: 22px;
       color: #475569;
       margin: 6px 0;
-      font-weight: 700;
     }
 
     .spinner {
@@ -338,14 +354,12 @@
 
   <div class="top-panel">
     <div class="option-group">
-      <span>🎨 프레임:</span>
+      <span>🎨 프레임 선택 (클릭 시 미리보기):</span>
       <div class="frame-chips">
         <button class="chip-btn chip-ribbon active" data-theme="ribbon">🎀 하늘리본</button>
         <button class="chip-btn chip-pink" data-theme="pink">🍓 딸기베어</button>
+        <button class="chip-btn chip-blue" data-theme="blue">☁️ 몽실구름</button>
         <button class="chip-btn chip-yellow" data-theme="yellow">🧸 큐티베어</button>
-        <!-- 사용자가 직접 이미지를 첨부할 수 있는 버튼 -->
-        <button class="chip-btn chip-upload" id="btnUploadTrigger">📁 내 리본사진 넣기</button>
-        <input type="file" id="frameFileInput" accept="image/*" style="display: none;">
       </div>
     </div>
     <div class="option-group">
@@ -366,14 +380,16 @@
 
   <div class="controls">
     <button id="btnStart" class="btn-main">📸 촬영 시작 (Space)</button>
+    <button id="btnPreview" class="btn-sub">🔍 프레임 미리보기</button>
   </div>
 
-  <!-- 결과 미리보기 팝업 -->
+  <!-- 결과 & 프레임 미리보기 팝업 -->
   <div id="resultModal" class="modal">
     <div class="modal-content">
       <div class="frame-chips">
         <button class="chip-btn chip-ribbon" data-theme="ribbon">🎀 하늘리본</button>
         <button class="chip-btn chip-pink" data-theme="pink">🍓 딸기베어</button>
+        <button class="chip-btn chip-blue" data-theme="blue">☁️ 몽실구름</button>
         <button class="chip-btn chip-yellow" data-theme="yellow">🧸 큐티베어</button>
       </div>
 
@@ -382,7 +398,7 @@
       <div class="modal-buttons">
         <button id="btnPrint" class="btn-modal btn-print">🖨️ 바로 인쇄</button>
         <button id="btnDownload" class="btn-modal btn-download">💾 사진 저장</button>
-        <button id="btnClose" class="btn-modal btn-close">다시 찍기</button>
+        <button id="btnClose" class="btn-modal btn-close">닫기</button>
       </div>
     </div>
   </div>
@@ -393,7 +409,7 @@
       <div class="spinner"></div>
       <h2>🖨️ 예쁘게 인쇄하고 있어요!</h2>
       <p>포토프린터에서 사진이 나올 때까지</p>
-      <p style="color: #0284c7; font-weight: 800; font-size: 24px;">잠시만 자리에서 기다려주세요! 💖</p>
+      <p style="color: #0284c7; font-size: 26px;">잠시만 자리에서 기다려주세요! 💖</p>
       <p id="printCountdown" style="font-size: 16px; color: #94a3b8; margin-top: 15px;">(약 12초 후 다음 촬영이 가능합니다)</p>
     </div>
   </div>
@@ -401,25 +417,26 @@
   <img id="printTarget" class="print-image" />
 
   <script>
+    // ★ 4번 요구사항 반영: 사진을 더 작게(460x620), 프레임 여백을 넓게(95px) 주어 리본이 사방에서 시원하게 보임!
     const CONFIG = {
       canvasWidth: 1200,
       canvasHeight: 1800,
-      photoWidth: 560,
-      photoHeight: 765,
-      marginLeft: 30,
-      marginTop: 35,
-      gapX: 20,
-      gapY: 25,
-      photoRadius: 20,
-      countdownSec: 5
+      photoWidth: 460,       // 컴팩트한 사진 가로
+      photoHeight: 620,      // 컴팩트한 사진 세로
+      marginLeft: 95,        // 좌우 넓은 프레임 두께
+      marginTop: 90,         // 상단 넓은 프레임 두께
+      gapX: 90,              // 사진 사이 넓은 가로 간격
+      gapY: 70,              // 사진 사이 세로 간격
+      photoRadius: 24,       // 사진 모서리 둥글게
+      countdownSec: 5        // 5초 타이머
     };
 
     let currentTheme = 'ribbon';
     let brightnessMultiplier = 1.18;
-    let userUploadedImage = null; // 사용자가 첨부한 프레임 이미지 객체
 
     const video = document.getElementById('webcam');
     const btnStart = document.getElementById('btnStart');
+    const btnPreview = document.getElementById('btnPreview');
     const cutBadge = document.getElementById('cutBadge');
     const countdownEl = document.getElementById('countdown');
     const flash = document.getElementById('flash');
@@ -431,43 +448,9 @@
     const brightnessRange = document.getElementById('brightnessRange');
     const brightnessVal = document.getElementById('brightnessVal');
 
-    const fileInput = document.getElementById('frameFileInput');
-    const btnUploadTrigger = document.getElementById('btnUploadTrigger');
-
     let audioCtx = null;
     let capturedFrames = [];
     let isRunning = false;
-
-    // 첨부 이미지 파일 로컬스토리지에서 복원
-    const savedCustomFrame = localStorage.getItem('gocheok_custom_frame');
-    if (savedCustomFrame) {
-      userUploadedImage = new Image();
-      userUploadedImage.onload = () => {
-        if (capturedFrames.length === 4) drawPhotoStrip();
-      };
-      userUploadedImage.src = savedCustomFrame;
-    }
-
-    // 파일 첨부 버튼 클릭 이벤트
-    btnUploadTrigger.addEventListener('click', () => fileInput.click());
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          userUploadedImage = img;
-          localStorage.setItem('gocheok_custom_frame', event.target.result);
-          currentTheme = 'ribbon';
-          alert("첨부하신 리본 프레임이 성공적으로 배경으로 적용되었습니다!");
-          if (capturedFrames.length === 4) drawPhotoStrip();
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
 
     // 밝기 슬라이더
     function updateVideoFilter() {
@@ -478,22 +461,28 @@
       brightnessMultiplier = val / 100;
       brightnessVal.innerText = `${val}%`;
       updateVideoFilter();
-      if (capturedFrames.length === 4) drawPhotoStrip();
+      drawPhotoStrip();
     });
 
-    // 테마 전환
+    // ★ 5번 요구사항 반영: 프레임 버튼 클릭 시 즉시 미리보기 팝업 열기 & 변경
     document.querySelectorAll('.frame-chips').forEach(container => {
       container.addEventListener('click', (e) => {
         const btn = e.target.closest('.chip-btn');
-        if (!btn || btn.id === 'btnUploadTrigger') return;
+        if (!btn) return;
         currentTheme = btn.dataset.theme;
 
         document.querySelectorAll('.chip-btn').forEach(b => {
-          if (b.dataset.theme) b.classList.toggle('active', b.dataset.theme === currentTheme);
+          b.classList.toggle('active', b.dataset.theme === currentTheme);
         });
 
-        if (capturedFrames.length === 4) drawPhotoStrip();
+        drawPhotoStrip();
+        modal.style.display = 'flex'; // 프레임 누르면 바로 모달로 실물 미리보기!
       });
+    });
+
+    btnPreview.addEventListener('click', () => {
+      drawPhotoStrip();
+      modal.style.display = 'flex';
     });
 
     function playBeep(freq, duration) {
@@ -522,6 +511,7 @@
       }
     }
 
+    // 5초 타이머 촬영 루프
     async function startCaptureSequence() {
       if (isRunning) return;
       isRunning = true;
@@ -584,177 +574,15 @@
       }, 50);
     }
 
-    // ★ 캔버스 합성 핵심 로직 (배경 -> 사진 -> 텍스트 순서)
-    function drawPhotoStrip() {
-      ctx.filter = "none";
+    // ★ 2번 요구사항 반영: 첨부해주신 리본 모양을 그대로 그리는 전용 벡터 함수
+    function drawHandDrawnRibbon(ctx, x, y, scale = 1, angle = 0, color = "#9ec5ea") {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.scale(scale, scale);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 5.5;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
 
-      // 1단계: 맨 아래 '배경' 그리기
-      if (currentTheme === 'ribbon') {
-        if (userUploadedImage) {
-          // 사용자가 첨부한 리본 이미지를 배경 전체에 꽉 채워 그림
-          ctx.drawImage(userUploadedImage, 0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-        } else {
-          // 첨부 이미지가 없을 경우 동일한 하늘색 리본 패턴 자동 생성
-          drawDefaultRibbonBackground();
-        }
-      } else if (currentTheme === 'pink') {
-        drawColorPatternBackground("#ffeef2", "rgba(255, 175, 195, 0.45)");
-      } else if (currentTheme === 'yellow') {
-        drawColorPatternBackground("#fff9db", "rgba(255, 236, 153, 0.6)");
-      }
-
-      // 2단계: 4컷 사진을 배경 '위에' 올리기
-      const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
-      const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
-      const positions = [
-        { x: CONFIG.marginLeft, y: CONFIG.marginTop },
-        { x: col2X,             y: CONFIG.marginTop },
-        { x: CONFIG.marginLeft, y: row2Y },
-        { x: col2X,             y: row2Y }
-      ];
-
-      capturedFrames.forEach((frameCanvas, index) => {
-        const pos = positions[index];
-        ctx.save();
-
-        // 둥근 모서리 클리핑
-        drawRoundedRectPath(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
-        ctx.clip();
-
-        // 뽀샤시 필터 적용
-        ctx.filter = `brightness(${brightnessMultiplier}) contrast(1.06) saturate(1.05)`;
-        ctx.drawImage(frameCanvas, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
-        ctx.restore();
-
-        // 사진 테두리 선 (리본 배경과 깔끔하게 구분되도록 화이트+스카이블루 라인 추가)
-        ctx.strokeStyle = (currentTheme === 'ribbon') ? "#bce0fd" : "#ffffff";
-        ctx.lineWidth = 6;
-        drawRoundedRectStroke(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
-      });
-
-      // 3단계: 하단 텍스트 및 카드 렌더링
-      const bannerTop = row2Y + CONFIG.photoHeight;
-      const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2);
-
-      // 리본 배경 위에서 글씨가 선명하게 보이도록 은은한 화이트 카드 받침대 배치
-      ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
-      drawRoundedRectPath(ctx, CONFIG.marginLeft + 20, bannerTop + 15, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 40, (CONFIG.canvasHeight - bannerTop) - 35, 22);
-      ctx.fill();
-      ctx.strokeStyle = "#cbe5ff";
-      ctx.lineWidth = 3;
-      drawRoundedRectStroke(ctx, CONFIG.marginLeft + 20, bannerTop + 15, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 40, (CONFIG.canvasHeight - bannerTop) - 35, 22);
-
-      ctx.textAlign = "center";
-      
-      // 윗줄: ♥2026 고척초등학교 기버데이♥
-      ctx.font = "900 45px 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
-      ctx.fillStyle = (currentTheme === 'pink') ? "#d90429" : (currentTheme === 'yellow') ? "#d97706" : "#0284c7";
-      ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 14);
-
-      // 아랫줄: 2026.11.19
-      ctx.font = "800 32px 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
-      ctx.fillStyle = (currentTheme === 'pink') ? "#ff4d6d" : (currentTheme === 'yellow') ? "#f59e0b" : "#38bdf8";
-      ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 44);
-    }
-
-    // 첨부 이미지 미선택 시 기본 그려지는 하늘색 리본 패턴
-    function drawDefaultRibbonBackground() {
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-
-      // 은은한 하늘색 리본 및 반짝이 패턴
-      ctx.font = "46px sans-serif";
-      ctx.textAlign = "center";
-      const ribbonPositions = [
-        {x: 100, y: 150}, {x: 600, y: 100}, {x: 1100, y: 180},
-        {x: 150, y: 550}, {x: 1050, y: 600},
-        {x: 80, y: 950},  {x: 600, y: 900}, {x: 1120, y: 1020},
-        {x: 120, y: 1450}, {x: 1080, y: 1480}, {x: 600, y: 1520}
-      ];
-
-      ribbonPositions.forEach(p => {
-        ctx.fillStyle = "rgba(165, 216, 255, 0.85)";
-        ctx.fillText("🎀", p.x, p.y);
-      });
-    }
-
-    function drawColorPatternBackground(bg, dotColor) {
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      ctx.fillStyle = dotColor;
-      for (let x = 15; x < CONFIG.canvasWidth; x += 45) {
-        for (let y = 15; y < CONFIG.canvasHeight; y += 45) {
-          ctx.beginPath();
-          ctx.arc(x, y, 4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-    }
-
-    function drawRoundedRectPath(ctx, x, y, width, height, radius) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-    }
-
-    function drawRoundedRectStroke(ctx, x, y, width, height, radius) {
-      drawRoundedRectPath(ctx, x, y, width, height, radius);
-      ctx.stroke();
-    }
-
-    function wait(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    btnStart.addEventListener('click', startCaptureSequence);
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && !isRunning && modal.style.display !== 'flex' && loadingModal.style.display !== 'flex') {
-        e.preventDefault();
-        startCaptureSequence();
-      }
-    });
-
-    document.getElementById('btnPrint').addEventListener('click', () => {
-      printTarget.src = canvas.toDataURL('image/png');
-      modal.style.display = 'none';
-      loadingModal.style.display = 'flex';
-
-      setTimeout(() => {
-        window.print();
-      }, 300);
-
-      let remain = 12;
-      const countLabel = document.getElementById('printCountdown');
-      const timer = setInterval(() => {
-        remain--;
-        countLabel.innerText = `(약 ${remain}초 후 다음 촬영이 가능합니다)`;
-        if (remain <= 0) {
-          clearInterval(timer);
-          loadingModal.style.display = 'none';
-        }
-      }, 1000);
-    });
-
-    document.getElementById('btnDownload').addEventListener('click', () => {
-      const link = document.createElement('a');
-      link.download = `고척초_기버데이_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-    });
-
-    document.getElementById('btnClose').addEventListener('click', () => {
-      modal.style.display = 'none';
-    });
-
-    initCamera();
-  </script>
-</body>
-</html>
+      // 왼쪽 루프 (
