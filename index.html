@@ -585,4 +585,264 @@
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
 
-      // 왼쪽 루프 (
+      // 왼쪽 루프 (리본 날개)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(-20, -32, -55, -18, -48, 8);
+      ctx.bezierCurveTo(-42, 26, -18, 14, 0, 0);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      ctx.fill();
+      ctx.stroke();
+
+      // 오른쪽 루프 (리본 날개)
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(20, -32, 55, -18, 48, 8);
+      ctx.bezierCurveTo(42, 26, 18, 14, 0, 0);
+      ctx.fill();
+      ctx.stroke();
+
+      // 왼쪽 리본 꼬리 (절개선 포함)
+      ctx.beginPath();
+      ctx.moveTo(-4, 6);
+      ctx.bezierCurveTo(-14, 25, -24, 45, -34, 62);
+      ctx.lineTo(-24, 52);
+      ctx.lineTo(-17, 63);
+      ctx.bezierCurveTo(-10, 44, -3, 25, 0, 6);
+      ctx.stroke();
+
+      // 오른쪽 리본 꼬리 (절개선 포함)
+      ctx.beginPath();
+      ctx.moveTo(4, 6);
+      ctx.bezierCurveTo(14, 25, 24, 45, 34, 62);
+      ctx.lineTo(24, 52);
+      ctx.lineTo(17, 63);
+      ctx.bezierCurveTo(10, 44, 3, 25, 0, 6);
+      ctx.stroke();
+
+      // 가운데 매듭 알
+      ctx.beginPath();
+      ctx.arc(0, 1, 8.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    // ★ 캔버스 렌더링 (리본 프레임 -> 사진 4장 -> 둥근 서체 멘트)
+    function drawPhotoStrip() {
+      ctx.filter = "none";
+
+      // 1. 배경 프레임 그리기
+      if (currentTheme === 'ribbon') {
+        // 보내주신 이미지와 똑같은 깨끗한 화이트 배경 + 지그재그 교차 하늘색 리본 배열
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
+        // 보내주신 사진의 리본 위치 그대로 촘촘하게 배치 (외곽과 사진 사이 간격에 쏙쏙 보이도록)
+        const ribbonGrid = [
+          // 1열 (상단 여백)
+          {x: 230, y: 55,  s: 0.95, a: -6},
+          {x: 600, y: 50,  s: 1.0,  a: 5},
+          {x: 970, y: 55,  s: 0.95, a: -4},
+
+          // 2열 (사진 윗부분 좌/우/중간)
+          {x: 50,  y: 220, s: 1.0,  a: 8},
+          {x: 600, y: 280, s: 0.95, a: -5},
+          {x: 1150, y: 220, s: 1.0, a: -7},
+
+          // 3열 (사진 중간 좌/우)
+          {x: 45,  y: 500, s: 0.95, a: -8},
+          {x: 600, y: 530, s: 1.0,  a: 4},
+          {x: 1155, y: 500, s: 0.95, a: 7},
+
+          // 4열 (1행과 2행 사진 사이 정중앙 가로 간격!)
+          {x: 230, y: 745, s: 1.0,  a: 6},
+          {x: 600, y: 745, s: 1.05, a: -4},
+          {x: 970, y: 745, s: 1.0,  a: 5},
+
+          // 5열 (아래 사진 좌/우/중간)
+          {x: 50,  y: 980, s: 0.95, a: -6},
+          {x: 600, y: 1020, s: 1.0, a: 5},
+          {x: 1150, y: 980, s: 0.95, a: 8},
+
+          {x: 45,  y: 1250, s: 1.0, a: 7},
+          {x: 600, y: 1260, s: 0.95, a: -5},
+          {x: 1155, y: 1250, s: 1.0, a: -8},
+
+          // 6열 (하단 멘트 영역 위/아래)
+          {x: 160, y: 1440, s: 1.05, a: -5},
+          {x: 600, y: 1440, s: 1.0,  a: 6},
+          {x: 1040, y: 1440, s: 1.05, a: 4},
+
+          {x: 140, y: 1720, s: 1.0,  a: 8},
+          {x: 600, y: 1730, s: 1.05, a: -4},
+          {x: 1060, y: 1720, s: 1.0, a: -6}
+        ];
+
+        ribbonGrid.forEach(r => drawHandDrawnRibbon(ctx, r.x, r.y, r.s, r.a, "#98c5eb"));
+
+      } else if (currentTheme === 'pink') {
+        drawPatternFrame("#fff0f3", "rgba(255, 175, 195, 0.45)", "🍓", "#ff8fa3");
+      } else if (currentTheme === 'blue') {
+        drawPatternFrame("#eef7ff", "rgba(186, 222, 255, 0.5)", "☁️", "#74c0fc");
+      } else if (currentTheme === 'yellow') {
+        drawPatternFrame("#fffbe6", "rgba(255, 236, 153, 0.6)", "🧸", "#ffd43b");
+      }
+
+      // 2. 4컷 사진 위치 계산 (작아진 크기와 넓어진 프레임 여백)
+      const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
+      const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
+      const positions = [
+        { x: CONFIG.marginLeft, y: CONFIG.marginTop },
+        { x: col2X,             y: CONFIG.marginTop },
+        { x: CONFIG.marginLeft, y: row2Y },
+        { x: col2X,             y: row2Y }
+      ];
+
+      // 사진이 없을 때(프레임 미리보기 상태) 보여줄 샘플 더미 카드
+      const hasRealPhotos = capturedFrames.length === 4;
+
+      positions.forEach((pos, index) => {
+        ctx.save();
+
+        // 둥근 모서리 클리핑
+        drawRoundedRectPath(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
+        ctx.clip();
+
+        if (hasRealPhotos) {
+          ctx.filter = `brightness(${brightnessMultiplier}) contrast(1.06) saturate(1.05)`;
+          ctx.drawImage(capturedFrames[index], pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+        } else {
+          // 미리보기용 예쁜 플레이스홀더 화면
+          ctx.fillStyle = (currentTheme === 'ribbon') ? "#f0f8ff" : "#f8f9fa";
+          ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.fillStyle = "#94a3b8";
+          ctx.font = "34px 'Jua', sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(`사진 ${index + 1} 들어가는 곳`, pos.x + CONFIG.photoWidth / 2, pos.y + CONFIG.photoHeight / 2);
+        }
+        ctx.restore();
+
+        // 사진 테두리 (리본 프레임과 자연스럽게 어울리는 산뜻한 외곽선)
+        ctx.strokeStyle = (currentTheme === 'ribbon') ? "#bce0fd" : "#ffffff";
+        ctx.lineWidth = 7;
+        drawRoundedRectStroke(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
+      });
+
+      // 3. ★ 3번 요구사항 반영: 둥근 글씨체(Jua)와 가운데 맞춤 하단 멘트
+      const bannerTop = row2Y + CONFIG.photoHeight + 40;
+      const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2) - 10;
+
+      // 멘트 배경 화이트 카드
+      ctx.fillStyle = "rgba(255, 255, 255, 0.94)";
+      drawRoundedRectPath(ctx, CONFIG.marginLeft + 15, bannerTop - 10, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 30, (CONFIG.canvasHeight - bannerTop) - 30, 24);
+      ctx.fill();
+      ctx.strokeStyle = (currentTheme === 'ribbon') ? "#bce0fd" : "#ffd4df";
+      ctx.lineWidth = 4;
+      drawRoundedRectStroke(ctx, CONFIG.marginLeft + 15, bannerTop - 10, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 30, (CONFIG.canvasHeight - bannerTop) - 30, 24);
+
+      ctx.textAlign = "center";
+
+      // 윗줄: ♥2026 고척초등학교 기버데이♥ (동글동글 귀여운 폰트)
+      ctx.font = "52px 'Jua', sans-serif";
+      ctx.fillStyle = (currentTheme === 'pink') ? "#d90429" : (currentTheme === 'yellow') ? "#d97706" : (currentTheme === 'blue') ? "#1864ab" : "#0284c7";
+      ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 18);
+
+      // 아랫줄: 2026.11.19
+      ctx.font = "38px 'Jua', sans-serif";
+      ctx.fillStyle = (currentTheme === 'pink') ? "#ff4d6d" : (currentTheme === 'yellow') ? "#f59e0b" : (currentTheme === 'blue') ? "#4dabf7" : "#38bdf8";
+      ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 44);
+    }
+
+    function drawPatternFrame(bg, dotColor, emoji, strokeColor) {
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      ctx.fillStyle = dotColor;
+      for (let x = 20; x < CONFIG.canvasWidth; x += 55) {
+        for (let y = 20; y < CONFIG.canvasHeight; y += 55) {
+          ctx.beginPath();
+          ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.font = "48px sans-serif";
+      ctx.fillText(emoji, 60, 60);
+      ctx.fillText(emoji, CONFIG.canvasWidth - 60, 60);
+      ctx.fillText(emoji, 60, CONFIG.canvasHeight - 60);
+      ctx.fillText(emoji, CONFIG.canvasWidth - 60, CONFIG.canvasHeight - 60);
+    }
+
+    function drawRoundedRectPath(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function drawRoundedRectStroke(ctx, x, y, width, height, radius) {
+      drawRoundedRectPath(ctx, x, y, width, height, radius);
+      ctx.stroke();
+    }
+
+    function wait(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    btnStart.addEventListener('click', startCaptureSequence);
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !isRunning && modal.style.display !== 'flex' && loadingModal.style.display !== 'flex') {
+        e.preventDefault();
+        startCaptureSequence();
+      }
+    });
+
+    document.getElementById('btnPrint').addEventListener('click', () => {
+      printTarget.src = canvas.toDataURL('image/png');
+      modal.style.display = 'none';
+      loadingModal.style.display = 'flex';
+
+      setTimeout(() => {
+        window.print();
+      }, 300);
+
+      let remain = 12;
+      const countLabel = document.getElementById('printCountdown');
+      const timer = setInterval(() => {
+        remain--;
+        countLabel.innerText = `(약 ${remain}초 후 다음 촬영이 가능합니다)`;
+        if (remain <= 0) {
+          clearInterval(timer);
+          loadingModal.style.display = 'none';
+        }
+      }, 1000);
+    });
+
+    document.getElementById('btnDownload').addEventListener('click', () => {
+      const link = document.createElement('a');
+      link.download = `고척초_기버데이_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+
+    document.getElementById('btnClose').addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+
+    // 구글 폰트(Jua) 로딩 완료 후 초기 렌더링
+    document.fonts.ready.then(() => {
+      drawPhotoStrip();
+    });
+
+    initCamera();
+  </script>
+</body>
+</html>
