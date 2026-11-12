@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>고척초등학교 기버데이 인생네컷</title>
   <style>
-    * { box-sizing: border-box; user-select: none; }
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
     body {
       margin: 0;
-      padding: 12px 0;
+      padding: 10px 0;
       background-color: #1a1a24;
       color: #ffffff;
       font-family: 'Pretendard', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
@@ -29,7 +32,7 @@
       letter-spacing: -0.5px;
     }
 
-    /* 상단 컨트롤 바 */
+    /* 상단 프레임 및 옵션 바 */
     .top-panel {
       display: flex;
       flex-wrap: wrap;
@@ -37,7 +40,7 @@
       align-items: center;
       gap: 14px;
       margin-bottom: 12px;
-      background: #2a2a38;
+      background: #282836;
       padding: 10px 22px;
       border-radius: 40px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
@@ -54,6 +57,7 @@
     .frame-chips {
       display: flex;
       gap: 8px;
+      align-items: center;
     }
 
     .chip-btn {
@@ -63,7 +67,7 @@
       font-size: 14px;
       font-weight: 800;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
     .chip-btn.active {
@@ -72,27 +76,27 @@
       box-shadow: 0 0 12px rgba(255, 222, 89, 0.7);
     }
 
-    .chip-butter { background: #fff3bf; color: #b25e00; }
-    .chip-berry  { background: #ffdce5; color: #c2255c; }
-    .chip-sky    { background: #d0ebff; color: #1864ab; }
-    .chip-custom { background: #38d9a9; color: #084935; }
+    .chip-ribbon { background: #e3f2fd; color: #1971c2; }
+    .chip-pink   { background: #ffd4df; color: #b01e4a; }
+    .chip-yellow { background: #ffec99; color: #d97706; }
+    .chip-upload { background: #4f46e5; color: #ffffff; }
 
     input[type=range] {
-      width: 90px;
+      width: 95px;
       accent-color: #ffde59;
       cursor: pointer;
     }
 
-    /* 세로형 4컷 전용 뷰어 */
+    /* 세로형 부스 컨테이너 */
     .booth-container {
       position: relative;
       width: 440px;
-      height: 560px;
+      height: 600px;
       background: #000;
       border-radius: 24px;
       overflow: hidden;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.8);
-      border: 5px solid #3c3c50;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.8);
+      border: 5px solid #3c3c52;
     }
 
     video {
@@ -160,21 +164,21 @@
     }
 
     .btn-main {
-      background: linear-gradient(135deg, #ff4081, #f50057);
+      background: linear-gradient(135deg, #0284c7, #0369a1);
       color: white;
       border: none;
-      padding: 14px 45px;
+      padding: 14px 46px;
       font-size: 21px;
       font-weight: 900;
       border-radius: 40px;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(245, 0, 87, 0.45);
+      box-shadow: 0 6px 20px rgba(3, 105, 161, 0.5);
       transition: transform 0.15s, box-shadow 0.15s;
     }
 
     .btn-main:hover:not(:disabled) {
       transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(245, 0, 87, 0.65);
+      box-shadow: 0 8px 25px rgba(2, 132, 199, 0.7);
     }
 
     .btn-main:disabled {
@@ -183,7 +187,7 @@
       box-shadow: none;
     }
 
-    /* 결과 미리보기 모달 */
+    /* 결과 모달 */
     .modal {
       position: fixed;
       top: 0;
@@ -200,12 +204,12 @@
 
     .modal-content {
       background: #252533;
-      padding: 18px 24px;
+      padding: 20px 26px;
       border-radius: 24px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.7);
     }
 
@@ -225,21 +229,21 @@
     .btn-modal {
       border: none;
       padding: 11px 22px;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: bold;
       border-radius: 25px;
       cursor: pointer;
       color: white;
     }
 
-    .btn-print { background: #2563eb; }
-    .btn-print:hover { background: #1d4ed8; }
+    .btn-print { background: #0284c7; }
+    .btn-print:hover { background: #0369a1; }
     .btn-download { background: #475569; }
     .btn-download:hover { background: #334155; }
     .btn-close { background: #e11d48; }
     .btn-close:hover { background: #be123c; }
 
-    /* 인쇄 중 로딩 안내 */
+    /* 인쇄 대기 팝업 */
     .loading-modal {
       position: fixed;
       top: 0;
@@ -267,7 +271,7 @@
     .loading-card h2 {
       font-size: 32px;
       margin: 0 0 14px 0;
-      color: #e11d48;
+      color: #0284c7;
     }
 
     .loading-card p {
@@ -282,42 +286,67 @@
       width: 60px;
       height: 60px;
       border: 6px solid #f1f5f9;
-      border-top: 6px solid #e11d48;
+      border-top: 6px solid #0284c7;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
 
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
-    @page { size: 4in 6in; margin: 0; }
+    @keyframes popIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* 4x6 인치 Borderless 인쇄 */
+    @page {
+      size: 4in 6in;
+      margin: 0;
+    }
+
     @media print {
-      body * { visibility: hidden; }
-      .print-image, .print-image * { visibility: visible; }
+      body * {
+        visibility: hidden;
+      }
+      .print-image, .print-image * {
+        visibility: visible;
+      }
       .print-image {
-        position: absolute; left: 0; top: 0;
-        width: 100vw; height: 100vh;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
         display: block !important;
       }
     }
-    .print-image { display: none; width: 100%; height: 100%; object-fit: fill; }
+
+    .print-image {
+      display: none;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+    }
   </style>
 </head>
 <body>
 
   <header>★ 고척초등학교 기버데이 포토부스 ★</header>
 
-  <!-- 상단 테마 선택 패널 -->
   <div class="top-panel">
     <div class="option-group">
       <span>🎨 프레임:</span>
       <div class="frame-chips">
-        <button class="chip-btn chip-butter active" data-theme="butter">🧺 버터 깅엄체크</button>
-        <button class="chip-btn chip-berry" data-theme="berry">🍓 딸기우유 구름</button>
-        <button class="chip-btn chip-sky" data-theme="sky">☁️ 파스텔 스카이</button>
-        <button class="chip-btn chip-custom" id="btnUploadTrigger">📁 내 디자인 PNG 넣기</button>
+        <button class="chip-btn chip-ribbon active" data-theme="ribbon">🎀 하늘리본</button>
+        <button class="chip-btn chip-pink" data-theme="pink">🍓 딸기베어</button>
+        <button class="chip-btn chip-yellow" data-theme="yellow">🧸 큐티베어</button>
+        <!-- 사용자가 직접 이미지를 첨부할 수 있는 버튼 -->
+        <button class="chip-btn chip-upload" id="btnUploadTrigger">📁 내 리본사진 넣기</button>
+        <input type="file" id="frameFileInput" accept="image/*" style="display: none;">
       </div>
-      <input type="file" id="pngUploader" accept="image/png" style="display: none;">
     </div>
     <div class="option-group">
       <span>☀️ 뽀샤시:</span>
@@ -326,7 +355,6 @@
     </div>
   </div>
 
-  <!-- 촬영 뷰어 -->
   <div class="booth-container">
     <video id="webcam" autoplay playsinline></video>
     <div class="overlay">
@@ -340,13 +368,13 @@
     <button id="btnStart" class="btn-main">📸 촬영 시작 (Space)</button>
   </div>
 
-  <!-- 결과 모달 -->
+  <!-- 결과 미리보기 팝업 -->
   <div id="resultModal" class="modal">
     <div class="modal-content">
       <div class="frame-chips">
-        <button class="chip-btn chip-butter" data-theme="butter">🧺 버터 깅엄체크</button>
-        <button class="chip-btn chip-berry" data-theme="berry">🍓 딸기우유 구름</button>
-        <button class="chip-btn chip-sky" data-theme="sky">☁️ 파스텔 스카이</button>
+        <button class="chip-btn chip-ribbon" data-theme="ribbon">🎀 하늘리본</button>
+        <button class="chip-btn chip-pink" data-theme="pink">🍓 딸기베어</button>
+        <button class="chip-btn chip-yellow" data-theme="yellow">🧸 큐티베어</button>
       </div>
 
       <canvas id="previewCanvas" width="1200" height="1800"></canvas>
@@ -359,13 +387,13 @@
     </div>
   </div>
 
-  <!-- 인쇄 대기 화면 -->
+  <!-- 인쇄 대기 팝업 -->
   <div id="loadingModal" class="loading-modal">
     <div class="loading-card">
       <div class="spinner"></div>
       <h2>🖨️ 예쁘게 인쇄하고 있어요!</h2>
       <p>포토프린터에서 사진이 나올 때까지</p>
-      <p style="color: #e11d48; font-weight: 800; font-size: 24px;">잠시만 자리에서 기다려주세요! 💖</p>
+      <p style="color: #0284c7; font-weight: 800; font-size: 24px;">잠시만 자리에서 기다려주세요! 💖</p>
       <p id="printCountdown" style="font-size: 16px; color: #94a3b8; margin-top: 15px;">(약 12초 후 다음 촬영이 가능합니다)</p>
     </div>
   </div>
@@ -373,23 +401,22 @@
   <img id="printTarget" class="print-image" />
 
   <script>
-    // 4x6 (1200 x 1800) 꽉 찬 규격 레이아웃
     const CONFIG = {
       canvasWidth: 1200,
       canvasHeight: 1800,
-      photoWidth: 550,
-      photoHeight: 720,
-      marginLeft: 40,
-      marginTop: 80,
+      photoWidth: 560,
+      photoHeight: 765,
+      marginLeft: 30,
+      marginTop: 35,
       gapX: 20,
-      gapY: 26,
-      photoRadius: 26,
+      gapY: 25,
+      photoRadius: 20,
       countdownSec: 5
     };
 
-    let currentTheme = 'butter';
+    let currentTheme = 'ribbon';
     let brightnessMultiplier = 1.18;
-    let customFrameImage = null; // 사용자가 올린 커스텀 PNG 이미지
+    let userUploadedImage = null; // 사용자가 첨부한 프레임 이미지 객체
 
     const video = document.getElementById('webcam');
     const btnStart = document.getElementById('btnStart');
@@ -403,17 +430,49 @@
     const printTarget = document.getElementById('printTarget');
     const brightnessRange = document.getElementById('brightnessRange');
     const brightnessVal = document.getElementById('brightnessVal');
-    const pngUploader = document.getElementById('pngUploader');
+
+    const fileInput = document.getElementById('frameFileInput');
+    const btnUploadTrigger = document.getElementById('btnUploadTrigger');
 
     let audioCtx = null;
     let capturedFrames = [];
     let isRunning = false;
 
+    // 첨부 이미지 파일 로컬스토리지에서 복원
+    const savedCustomFrame = localStorage.getItem('gocheok_custom_frame');
+    if (savedCustomFrame) {
+      userUploadedImage = new Image();
+      userUploadedImage.onload = () => {
+        if (capturedFrames.length === 4) drawPhotoStrip();
+      };
+      userUploadedImage.src = savedCustomFrame;
+    }
+
+    // 파일 첨부 버튼 클릭 이벤트
+    btnUploadTrigger.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          userUploadedImage = img;
+          localStorage.setItem('gocheok_custom_frame', event.target.result);
+          currentTheme = 'ribbon';
+          alert("첨부하신 리본 프레임이 성공적으로 배경으로 적용되었습니다!");
+          if (capturedFrames.length === 4) drawPhotoStrip();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
     // 밝기 슬라이더
     function updateVideoFilter() {
       video.style.filter = `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05)`;
     }
-
     brightnessRange.addEventListener('input', (e) => {
       const val = e.target.value;
       brightnessMultiplier = val / 100;
@@ -430,33 +489,11 @@
         currentTheme = btn.dataset.theme;
 
         document.querySelectorAll('.chip-btn').forEach(b => {
-          if (b.id !== 'btnUploadTrigger') b.classList.toggle('active', b.dataset.theme === currentTheme);
+          if (b.dataset.theme) b.classList.toggle('active', b.dataset.theme === currentTheme);
         });
 
         if (capturedFrames.length === 4) drawPhotoStrip();
       });
-    });
-
-    // 사용자 PNG 파일 업로드 처리
-    document.getElementById('btnUploadTrigger').addEventListener('click', () => {
-      pngUploader.click();
-    });
-
-    pngUploader.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const img = new Image();
-        img.onload = () => {
-          customFrameImage = img;
-          currentTheme = 'custom';
-          alert("✨ 나만의 프레임 디자인이 성공적으로 등록되었습니다!");
-          if (capturedFrames.length === 4) drawPhotoStrip();
-        };
-        img.src = evt.target.result;
-      };
-      reader.readAsDataURL(file);
     });
 
     function playBeep(freq, duration) {
@@ -485,7 +522,6 @@
       }
     }
 
-    // 5초 타이머 촬영
     async function startCaptureSequence() {
       if (isRunning) return;
       isRunning = true;
@@ -548,51 +584,26 @@
       }, 50);
     }
 
-    /* ==============================================================
-       ★ 세련된 인생네컷 스튜디오 패턴 배경 엔진 ★
-    ============================================================== */
-
-    // 1. 버터 깅엄체크 패턴 그리기
-    function drawGinghamBackground(ctx, baseColor, stripeColor, size) {
-      ctx.fillStyle = baseColor;
-      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-
-      ctx.fillStyle = stripeColor;
-      // 세로 줄무늬
-      for (let x = 0; x < CONFIG.canvasWidth; x += size * 2) {
-        ctx.fillRect(x, 0, size, CONFIG.canvasHeight);
-      }
-      // 가로 줄무늬
-      for (let y = 0; y < CONFIG.canvasHeight; y += size * 2) {
-        ctx.fillRect(0, y, CONFIG.canvasWidth, size);
-      }
-    }
-
-    // 2. 몽글몽글 구름 물결 패턴 그리기
-    function drawCloudWaves(ctx, waveColor) {
-      ctx.fillStyle = waveColor;
-      const scallopCount = 12;
-      const r = CONFIG.canvasWidth / scallopCount / 2;
-
-      // 상단 물결
-      for (let i = 0; i < scallopCount; i++) {
-        ctx.beginPath();
-        ctx.arc(i * (r * 2) + r, 0, r * 1.05, 0, Math.PI);
-        ctx.fill();
-      }
-
-      // 하단 둥근 언덕
-      ctx.beginPath();
-      ctx.ellipse(CONFIG.canvasWidth / 2, CONFIG.canvasHeight + 40, 680, 210, 0, Math.PI, 0);
-      ctx.fill();
-    }
-
-    /* ==============================================================
-       ★ 메인 프레임 렌더링 ★
-    ============================================================== */
+    // ★ 캔버스 합성 핵심 로직 (배경 -> 사진 -> 텍스트 순서)
     function drawPhotoStrip() {
       ctx.filter = "none";
 
+      // 1단계: 맨 아래 '배경' 그리기
+      if (currentTheme === 'ribbon') {
+        if (userUploadedImage) {
+          // 사용자가 첨부한 리본 이미지를 배경 전체에 꽉 채워 그림
+          ctx.drawImage(userUploadedImage, 0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        } else {
+          // 첨부 이미지가 없을 경우 동일한 하늘색 리본 패턴 자동 생성
+          drawDefaultRibbonBackground();
+        }
+      } else if (currentTheme === 'pink') {
+        drawColorPatternBackground("#ffeef2", "rgba(255, 175, 195, 0.45)");
+      } else if (currentTheme === 'yellow') {
+        drawColorPatternBackground("#fff9db", "rgba(255, 236, 153, 0.6)");
+      }
+
+      // 2단계: 4컷 사진을 배경 '위에' 올리기
       const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
       const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
       const positions = [
@@ -602,80 +613,82 @@
         { x: col2X,             y: row2Y }
       ];
 
-      let titleColor = "#5c3d2e";
-      let dateColor = "#8c624d";
-
-      // 1. 테마별 배경 렌더링
-      if (currentTheme === 'butter') {
-        // [테마 1] 🧺 버터 깅엄체크
-        drawGinghamBackground(ctx, "#fdf9ee", "rgba(247, 215, 148, 0.45)", 40);
-        titleColor = "#6d4c41";
-        dateColor = "#8d6e63";
-
-      } else if (currentTheme === 'berry') {
-        // [테마 2] 🍓 딸기우유 구름
-        ctx.fillStyle = "#fff0f3";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-        drawCloudWaves(ctx, "#ffd0dc");
-        titleColor = "#c2255c";
-        dateColor = "#e64980";
-
-      } else if (currentTheme === 'sky') {
-        // [테마 3] ☁️ 파스텔 스카이
-        ctx.fillStyle = "#f0f8ff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-        drawCloudWaves(ctx, "#d0ebff");
-        titleColor = "#1864ab";
-        dateColor = "#228be6";
-
-      } else if (currentTheme === 'custom') {
-        // [테마 4] 사용자가 올린 프레임
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      }
-
-      // 2. 사진 4장 둥근 모서리 합성 & 뽀샤시 필터 적용
       capturedFrames.forEach((frameCanvas, index) => {
         const pos = positions[index];
         ctx.save();
 
-        // 둥근 사각형 클리핑
+        // 둥근 모서리 클리핑
         drawRoundedRectPath(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
         ctx.clip();
 
-        // 뽀샤시 필터
+        // 뽀샤시 필터 적용
         ctx.filter = `brightness(${brightnessMultiplier}) contrast(1.06) saturate(1.05)`;
         ctx.drawImage(frameCanvas, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
         ctx.restore();
 
-        // 은은하고 깔끔한 폴라로이드 테두리
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.08)";
-        ctx.lineWidth = 4;
+        // 사진 테두리 선 (리본 배경과 깔끔하게 구분되도록 화이트+스카이블루 라인 추가)
+        ctx.strokeStyle = (currentTheme === 'ribbon') ? "#bce0fd" : "#ffffff";
+        ctx.lineWidth = 6;
         drawRoundedRectStroke(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
       });
 
-      // 3. 만약 사용자가 업로드한 커스텀 PNG 프레임이 있다면 위에 덮어쓰기
-      if (currentTheme === 'custom' && customFrameImage) {
-        ctx.drawImage(customFrameImage, 0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      }
-
-      // 4. 하단 지정 문구 렌더링 (가운데 정렬)
+      // 3단계: 하단 텍스트 및 카드 렌더링
       const bannerTop = row2Y + CONFIG.photoHeight;
       const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2);
 
-      ctx.filter = "none";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
+      // 리본 배경 위에서 글씨가 선명하게 보이도록 은은한 화이트 카드 받침대 배치
+      ctx.fillStyle = "rgba(255, 255, 255, 0.88)";
+      drawRoundedRectPath(ctx, CONFIG.marginLeft + 20, bannerTop + 15, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 40, (CONFIG.canvasHeight - bannerTop) - 35, 22);
+      ctx.fill();
+      ctx.strokeStyle = "#cbe5ff";
+      ctx.lineWidth = 3;
+      drawRoundedRectStroke(ctx, CONFIG.marginLeft + 20, bannerTop + 15, CONFIG.canvasWidth - (CONFIG.marginLeft * 2) - 40, (CONFIG.canvasHeight - bannerTop) - 35, 22);
 
+      ctx.textAlign = "center";
+      
       // 윗줄: ♥2026 고척초등학교 기버데이♥
-      ctx.font = "900 48px 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
-      ctx.fillStyle = titleColor;
-      ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 16);
+      ctx.font = "900 45px 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
+      ctx.fillStyle = (currentTheme === 'pink') ? "#d90429" : (currentTheme === 'yellow') ? "#d97706" : "#0284c7";
+      ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 14);
 
       // 아랫줄: 2026.11.19
       ctx.font = "800 32px 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
-      ctx.fillStyle = dateColor;
+      ctx.fillStyle = (currentTheme === 'pink') ? "#ff4d6d" : (currentTheme === 'yellow') ? "#f59e0b" : "#38bdf8";
       ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 44);
+    }
+
+    // 첨부 이미지 미선택 시 기본 그려지는 하늘색 리본 패턴
+    function drawDefaultRibbonBackground() {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
+      // 은은한 하늘색 리본 및 반짝이 패턴
+      ctx.font = "46px sans-serif";
+      ctx.textAlign = "center";
+      const ribbonPositions = [
+        {x: 100, y: 150}, {x: 600, y: 100}, {x: 1100, y: 180},
+        {x: 150, y: 550}, {x: 1050, y: 600},
+        {x: 80, y: 950},  {x: 600, y: 900}, {x: 1120, y: 1020},
+        {x: 120, y: 1450}, {x: 1080, y: 1480}, {x: 600, y: 1520}
+      ];
+
+      ribbonPositions.forEach(p => {
+        ctx.fillStyle = "rgba(165, 216, 255, 0.85)";
+        ctx.fillText("🎀", p.x, p.y);
+      });
+    }
+
+    function drawColorPatternBackground(bg, dotColor) {
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      ctx.fillStyle = dotColor;
+      for (let x = 15; x < CONFIG.canvasWidth; x += 45) {
+        for (let y = 15; y < CONFIG.canvasHeight; y += 45) {
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
     }
 
     function drawRoundedRectPath(ctx, x, y, width, height, radius) {
@@ -701,7 +714,6 @@
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // 촬영 시작
     btnStart.addEventListener('click', startCaptureSequence);
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && !isRunning && modal.style.display !== 'flex' && loadingModal.style.display !== 'flex') {
@@ -710,7 +722,6 @@
       }
     });
 
-    // 인쇄 실행 & 안내창 카운트다운
     document.getElementById('btnPrint').addEventListener('click', () => {
       printTarget.src = canvas.toDataURL('image/png');
       modal.style.display = 'none';
@@ -732,20 +743,17 @@
       }, 1000);
     });
 
-    // 다운로드
     document.getElementById('btnDownload').addEventListener('click', () => {
       const link = document.createElement('a');
-      link.download = `고척초_기버데이_${currentTheme}_${Date.now()}.png`;
+      link.download = `고척초_기버데이_${Date.now()}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     });
 
-    // 닫기
     document.getElementById('btnClose').addEventListener('click', () => {
       modal.style.display = 'none';
     });
 
-    // 시작 시 카메라 구동
     initCamera();
   </script>
 </body>
