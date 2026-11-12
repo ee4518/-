@@ -5,36 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>고척초등학교 기버데이 인생네컷</title>
   
-  <!-- 웹폰트 로드: 카페24 슈퍼매직, 개구체(손글씨), 잘난체(상상공작소 매핑) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@700&display=swap" rel="stylesheet">
-  
   <style>
-    /* 카페24 슈퍼매직 */
+    /* 1. 코트라 희망체 웹폰트 */
+    @font-face {
+      font-family: 'KotraHope';
+      src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/KOTRAHOPE.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    /* 2. 카페24 슈퍼매직 웹폰트 */
     @font-face {
       font-family: 'Cafe24Supermagic';
       src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/Cafe24Supermagic-Bold-v1.0.woff2') format('woff2');
       font-weight: 700;
       font-style: normal;
     }
-    /* 210 상상공작소 (PC 로컬 폰트 우선 탐색 + 미설치 시 잘난체 볼드 매핑) */
-    @font-face {
-      font-family: 'FontSangsang';
-      src: local('210 상상공작소'), local('210 상상공작소 B'), local('210 Sangsangongjakso'),
-           url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/Jalnan.woff') format('woff');
-      font-weight: bold;
-    }
-    /* TDTD 둑흔둑흔 (PC 로컬 폰트 우선 탐색 + 미설치 시 귀여운 손글씨 Gaegu 매핑) */
-    @font-face {
-      font-family: 'FontDookheun';
-      src: local('TDTD둑흔둑흔'), local('TDTD 둑흔둑흔'), local('TDTDPitapat'), local('타닥타닥 둑흔둑흔'),
-           local('Gaegu');
-      font-weight: bold;
-    }
 
     :root {
-      --current-font: 'Cafe24Supermagic', sans-serif;
+      --current-font: 'KotraHope', 'Cafe24Supermagic', sans-serif;
     }
 
     * {
@@ -56,23 +45,23 @@
     }
 
     header {
-      font-size: 30px;
+      font-size: 32px;
       margin-bottom: 8px;
       color: #ffde59;
       text-shadow: 0 3px 10px rgba(0,0,0,0.6);
       font-family: var(--current-font) !important;
+      letter-spacing: 0.5px;
     }
 
-    /* 상단 옵션 패널 */
     .top-panel {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       margin-bottom: 12px;
       background: #282838;
-      padding: 10px 22px;
+      padding: 10px 24px;
       border-radius: 40px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     }
@@ -89,14 +78,13 @@
       gap: 6px;
     }
 
-    /* 모든 버튼 폰트 연동 (5번 요구사항) */
     button, .chip-btn, .btn-main, .btn-sub, .btn-modal {
       font-family: var(--current-font) !important;
     }
 
     .chip-btn {
       border: 2px solid transparent;
-      padding: 6px 14px;
+      padding: 6px 15px;
       border-radius: 20px;
       font-size: 15px;
       cursor: pointer;
@@ -110,13 +98,11 @@
       box-shadow: 0 0 10px rgba(255, 222, 89, 0.7);
     }
 
-    /* 프레임 테마 색상 */
     .theme-ribbon   { background: #e3f2fd; color: #1971c2; }
     .theme-festival { background: #fff3bf; color: #e67700; }
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
     .theme-animals  { background: #f3d9fa; color: #862e9c; }
 
-    /* 폰트 선택 버튼 */
     .font-btn { background: #3e3e52; color: #e2e8f0; }
 
     input[type=range] {
@@ -125,13 +111,12 @@
       cursor: pointer;
     }
 
-    /* 세로형 부스 컨테이너 */
     .booth-container {
       position: relative;
       width: 440px;
       height: 600px;
       background: #000;
-      border-radius: 24px;
+      border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 14px 40px rgba(0,0,0,0.8);
       border: 5px solid #3c3c52;
@@ -266,7 +251,7 @@
       width: 320px;
       height: 480px;
       background: white;
-      border-radius: 12px;
+      border-radius: 6px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
     }
 
@@ -340,14 +325,8 @@
       animation: spin 1s linear infinite;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes popIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
     @page { size: 4in 6in; margin: 0; }
     @media print {
@@ -355,8 +334,7 @@
       .print-image, .print-image * { visibility: visible; }
       .print-image {
         position: absolute; left: 0; top: 0;
-        width: 100vw; height: 100vh;
-        display: block !important;
+        width: 100vw; height: 100vh; display: block !important;
       }
     }
     .print-image { display: none; width: 100%; height: 100%; object-fit: fill; }
@@ -378,16 +356,12 @@
       </div>
     </div>
 
-    <!-- 폰트 선택 -->
+    <!-- 1번 요구사항: 폰트 2종으로 압축 (코트라희망체, 카페24슈퍼매직) -->
     <div class="option-group">
       <span>✍️ 글씨체:</span>
       <div class="chip-group" id="fontChips">
-        <button class="chip-btn font-btn" data-font="sangsang">210 상상공작소</button>
-        <button class="chip-btn font-btn" data-font="dookheun">TDTD둑흔둑흔</button>
-        <button class="chip-btn font-btn active" data-font="supermagic">카페24 슈퍼매직</button>
-        <!-- PC 내 폰트 파일 직접 로드용 히든 인풋 -->
-        <button class="chip-btn font-btn" id="btnCustomFont" title="컴퓨터에 있는 .ttf/.otf 파일 직접 적용">📂 파일 열기</button>
-        <input type="file" id="fontFileInput" accept=".ttf,.otf,.woff,.woff2" style="display:none;">
+        <button class="chip-btn font-btn active" data-font="kotrahope">코트라 희망체</button>
+        <button class="chip-btn font-btn" data-font="supermagic">카페24 슈퍼매직</button>
       </div>
     </div>
 
@@ -447,31 +421,26 @@
   <img id="printTarget" class="print-image" />
 
   <script>
-    // ★ 3번 요구사항 반영:
-    // - 바깥 프레임 두께(marginLeft 95, marginTop 90)는 그대로 유지
-    // - 사진 사이 안쪽 틈새를 40px로 얇게 축소하여 사진을 가로 485 x 세로 655로 큼직하게 확대!
     const CONFIG = {
       canvasWidth: 1200,
       canvasHeight: 1800,
-      photoWidth: 485,       // 사진 크기 확대
-      photoHeight: 655,      // 사진 크기 확대
-      marginLeft: 95,        // 바깥 프레임 두께 유지 (좌우)
-      marginTop: 90,         // 바깥 프레임 두께 유지 (상단)
-      gapX: 40,              // 안쪽 가로 프레임 슬림화 (40px)
-      gapY: 40,              // 안쪽 세로 프레임 슬림화 (40px)
-      photoRadius: 24,
+      photoWidth: 485,
+      photoHeight: 655,
+      marginLeft: 95,
+      marginTop: 90,
+      gapX: 40,
+      gapY: 40,
       countdownSec: 5
     };
 
-    // 폰트 정의
+    // 1번 요구사항: 폰트 매핑 (2종)
     const FONT_MAP = {
-      sangsang: "'FontSangsang', '210 상상공작소', sans-serif",
-      dookheun: "'FontDookheun', 'TDTD둑흔둑흔', 'Gaegu', cursive, sans-serif",
+      kotrahope: "'KotraHope', sans-serif",
       supermagic: "'Cafe24Supermagic', sans-serif"
     };
 
     let currentTheme = 'ribbon';
-    let currentFontKey = 'supermagic';
+    let currentFontKey = 'kotrahope';
     let brightnessMultiplier = 1.18;
 
     const video = document.getElementById('webcam');
@@ -488,30 +457,23 @@
     const brightnessRange = document.getElementById('brightnessRange');
     const brightnessVal = document.getElementById('brightnessVal');
 
-    const btnCustomFont = document.getElementById('btnCustomFont');
-    const fontFileInput = document.getElementById('fontFileInput');
-
     let audioCtx = null;
     let capturedFrames = [];
     let isRunning = false;
 
-    // ★ 5번 요구사항: 사이트 전체 UI & 버튼 폰트 실시간 변경
-    function applyFontToUIAndCanvas(fontKey, customFontFamily = null) {
+    function applyFontToUIAndCanvas(fontKey) {
       currentFontKey = fontKey;
-      const fontValue = customFontFamily || FONT_MAP[fontKey];
+      const fontValue = FONT_MAP[fontKey];
 
-      // 웹사이트 전체 폰트 변수 교체
       document.documentElement.style.setProperty('--current-font', fontValue);
       document.body.style.fontFamily = fontValue;
 
-      // 캔버스 다시 그리기
       drawPhotoStrip();
     }
 
-    // 폰트 버튼 클릭 이벤트 (1번 & 5번 요구사항)
     document.getElementById('fontChips').addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
-      if (!btn || btn.id === 'btnCustomFont') return;
+      if (!btn) return;
 
       document.querySelectorAll('#fontChips .chip-btn').forEach(b => {
         b.classList.toggle('active', b === btn);
@@ -520,29 +482,6 @@
       applyFontToUIAndCanvas(btn.dataset.font);
     });
 
-    // 폰트 파일 직접 로드 (.ttf / .otf)
-    btnCustomFont.addEventListener('click', () => fontFileInput.click());
-    fontFileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const fontName = 'UserLoadedFont';
-      const arrayBuffer = await file.arrayBuffer();
-      const customFont = new FontFace(fontName, arrayBuffer);
-      await customFont.load();
-      document.fonts.add(customFont);
-
-      FONT_MAP['custom'] = `'${fontName}', sans-serif`;
-
-      document.querySelectorAll('#fontChips .chip-btn').forEach(b => b.classList.remove('active'));
-      btnCustomFont.classList.add('active');
-      btnCustomFont.innerText = `📂 ${file.name.substring(0, 7)}..`;
-
-      applyFontToUIAndCanvas('custom');
-      alert(`'${file.name}' 폰트가 성공적으로 적용되었습니다!`);
-    });
-
-    // 밝기 슬라이더
     function updateVideoFilter() {
       video.style.filter = `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05)`;
     }
@@ -554,7 +493,6 @@
       drawPhotoStrip();
     });
 
-    // 테마 변경 이벤트
     function syncThemeButtons() {
       document.querySelectorAll('#themeChips .chip-btn, #modalThemeChips .chip-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.theme === currentTheme);
@@ -665,11 +603,11 @@
     }
 
     // ==========================================
-    // 손그림 드로잉 함수
+    // 손그림 드로잉 함수 (중심점 0,0 기준 대칭 보정)
     // ==========================================
     function drawDoodleRibbon(ctx, x, y, scale = 0.65, angle = 0, color = "#94c2ec") {
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translate(x, y - 5);
       ctx.rotate(angle * Math.PI / 180);
       ctx.scale(scale, scale);
       ctx.strokeStyle = color;
@@ -717,9 +655,10 @@
       ctx.restore();
     }
 
+    // 3번 요구사항: 하트의 중심(0,0)을 정확히 기준점으로 잡아 위로 쏠림 방지
     function drawDoodleHeart(ctx, x, y, size = 38, angle = 0, color = "#ff7597") {
       ctx.save();
-      ctx.translate(x, y);
+      ctx.translate(x, y - (size * 0.45));
       ctx.rotate(angle * Math.PI / 180);
       ctx.strokeStyle = color;
       ctx.fillStyle = "rgba(255, 240, 245, 0.65)";
@@ -746,6 +685,7 @@
       ctx.restore();
     }
 
+    // 3번 요구사항: 축제 아이템 기준점 중심 정렬
     function drawDoodlePartyItem(ctx, x, y, type, color, angle = 0) {
       ctx.save();
       ctx.translate(x, y);
@@ -758,50 +698,51 @@
       if (type === 'hat') {
         ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
         ctx.beginPath();
-        ctx.moveTo(0, -32);
-        ctx.lineTo(-20, 20);
-        ctx.quadraticCurveTo(0, 28, 20, 20);
+        ctx.moveTo(0, -28);
+        ctx.lineTo(-18, 18);
+        ctx.quadraticCurveTo(0, 24, 18, 18);
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.arc(0, -35, 6, 0, Math.PI*2);
+        ctx.arc(0, -31, 5.5, 0, Math.PI*2);
         ctx.fillStyle = color;
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(-10, -5); ctx.lineTo(10, -2);
-        ctx.moveTo(-15, 10); ctx.lineTo(15, 12);
+        ctx.moveTo(-9, -4); ctx.lineTo(9, -1);
+        ctx.moveTo(-13, 10); ctx.lineTo(13, 12);
         ctx.stroke();
 
       } else if (type === 'balloon') {
         ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
         ctx.beginPath();
-        ctx.ellipse(0, -12, 18, 24, 0, 0, Math.PI*2);
+        ctx.ellipse(0, -6, 17, 22, 0, 0, Math.PI*2);
         ctx.fill();
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(-3, 13); ctx.lineTo(3, 13); ctx.lineTo(0, 16); ctx.closePath(); ctx.fill();
+        ctx.moveTo(-3, 16); ctx.lineTo(3, 16); ctx.lineTo(0, 19); ctx.closePath(); ctx.fill();
         ctx.beginPath();
-        ctx.moveTo(0, 16);
-        ctx.bezierCurveTo(-8, 26, 8, 36, -2, 46);
+        ctx.moveTo(0, 19);
+        ctx.bezierCurveTo(-7, 27, 7, 35, -2, 43);
         ctx.stroke();
 
       } else if (type === 'star') {
         ctx.fillStyle = color;
         ctx.beginPath();
-        ctx.moveTo(0, -22);
-        ctx.quadraticCurveTo(0, 0, 22, 0);
-        ctx.quadraticCurveTo(0, 0, 0, 22);
-        ctx.quadraticCurveTo(0, 0, -22, 0);
-        ctx.quadraticCurveTo(0, 0, 0, -22);
+        ctx.moveTo(0, -20);
+        ctx.quadraticCurveTo(0, 0, 20, 0);
+        ctx.quadraticCurveTo(0, 0, 0, 20);
+        ctx.quadraticCurveTo(0, 0, -20, 0);
+        ctx.quadraticCurveTo(0, 0, 0, -20);
         ctx.fill();
       }
       ctx.restore();
     }
 
+    // 3번 요구사항: 동물 중심 정렬
     function drawDoodleAnimal(ctx, x, y, type, angle = 0) {
       ctx.save();
       ctx.translate(x, y);
@@ -813,9 +754,9 @@
       ctx.fillStyle = "#ffffff";
 
       if (type === 'bear') {
-        ctx.beginPath(); ctx.arc(-20, -18, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.arc(20, -18, 10, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 2, 26, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(-19, -16, 9.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(19, -16, 9.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 2, 25, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
         ctx.fillStyle = "#7c5335";
         ctx.beginPath(); ctx.arc(-8, 0, 2.8, 0, Math.PI*2); ctx.fill();
@@ -827,9 +768,9 @@
         ctx.beginPath(); ctx.arc(14, 8, 3.5, 0, Math.PI*2); ctx.fill();
 
       } else if (type === 'bunny') {
-        ctx.beginPath(); ctx.ellipse(-10, -22, 7, 18, -0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.ellipse(10, -22, 7, 18, 0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 4, 23, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(-9, -20, 6.5, 17, -0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(9, -20, 6.5, 17, 0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 4, 22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
         ctx.fillStyle = "#7c5335";
         ctx.beginPath(); ctx.arc(-7, 2, 2.5, 0, Math.PI*2); ctx.fill();
@@ -842,40 +783,38 @@
         for (let i = 0; i < 5; i++) {
           const a = (i * 72) * Math.PI / 180;
           ctx.beginPath();
-          ctx.arc(Math.cos(a)*15, Math.sin(a)*15, 8, 0, Math.PI*2);
+          ctx.arc(Math.cos(a)*14, Math.sin(a)*14, 7.5, 0, Math.PI*2);
           ctx.fillStyle = "#ffffff";
           ctx.fill(); ctx.stroke();
         }
-        ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI*2); ctx.fillStyle = "#ffc048"; ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI*2); ctx.fillStyle = "#ffc048"; ctx.fill(); ctx.stroke();
       }
       ctx.restore();
     }
 
-
     // ==========================================
-    // 캔버스 메인 합성
+    // 캔버스 렌더링
     // ==========================================
     function drawPhotoStrip() {
       ctx.filter = "none";
 
-      // ★ 2번 요구사항: x = 600 정중앙 대칭 그리드 좌표로 쏠림 완전 해결!
-      // Row A: x = 85, 340, 600, 860, 1115 (좌우 85px로 완벽 대칭)
-      // Row B: x = 210, 470, 730, 990     (좌우 210px로 완벽 대칭)
+      // ★ 3번 요구사항: 상하좌우 완벽 대칭 좌표 (y=900 정중앙 대칭, 상단 여백 80px = 하단 여백 80px)
       const symRowA = [85, 340, 600, 860, 1115];
       const symRowB = [210, 470, 730, 990];
+      const yPositions = [80, 240, 390, 540, 690, 840, 960, 1110, 1260, 1410, 1560, 1720];
 
       if (currentTheme === 'ribbon') {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
 
-        for (let y = 50, rowIdx = 0; y <= 1750; y += 150, rowIdx++) {
+        yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
           cols.forEach((x, cIdx) => {
             const rot = ((x * 3 + y * 7) % 32) - 16;
             const scale = 0.62 + ((cIdx + rowIdx) % 3) * 0.03;
             drawDoodleRibbon(ctx, x, y, scale, rot, "#95c2eb");
           });
-        }
+        });
 
       } else if (currentTheme === 'festival') {
         ctx.fillStyle = "#fffef7";
@@ -885,7 +824,7 @@
         const colors = ['#ff7675', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe'];
         let idx = 0;
 
-        for (let y = 60, rowIdx = 0; y <= 1750; y += 155, rowIdx++) {
+        yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
           cols.forEach((x) => {
             const item = items[idx % items.length];
@@ -894,7 +833,7 @@
             drawDoodlePartyItem(ctx, x, y, item, col, rot);
             idx++;
           });
-        }
+        });
 
       } else if (currentTheme === 'heart') {
         ctx.fillStyle = "#fff9fb";
@@ -903,15 +842,15 @@
         const heartColors = ['#ff7597', '#ff8fab', '#ffa2b8', '#ff5c8a'];
         let cIdx = 0;
 
-        for (let y = 55, rowIdx = 0; y <= 1750; y += 145, rowIdx++) {
+        yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
           cols.forEach((x) => {
             const rot = ((x * 5 + y * 3) % 36) - 18;
-            const size = 35 + ((x * y) % 8);
+            const size = 36 + ((x * y) % 6);
             drawDoodleHeart(ctx, x, y, size, rot, heartColors[cIdx % heartColors.length]);
             cIdx++;
           });
-        }
+        });
 
       } else if (currentTheme === 'animals') {
         ctx.fillStyle = "#fcfaf7";
@@ -920,7 +859,7 @@
         const animals = ['bear', 'bunny', 'flower'];
         let aIdx = 0;
 
-        for (let y = 60, rowIdx = 0; y <= 1750; y += 160, rowIdx++) {
+        yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
           cols.forEach((x) => {
             const type = animals[aIdx % animals.length];
@@ -928,10 +867,10 @@
             drawDoodleAnimal(ctx, x, y, type, rot);
             aIdx++;
           });
-        }
+        });
       }
 
-      // ★ 3번 요구사항: 4컷 사진 크기 확대 (485x655) & 안쪽 40px 슬림 간격
+      // ★ 2번 요구사항: 둥근 모서리 없이 깔끔한 '직각 사각형'으로 4컷 사진 렌더링
       const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
       const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
       const positions = [
@@ -945,19 +884,20 @@
 
       positions.forEach((pos, index) => {
         ctx.save();
-        
         ctx.shadowColor = "rgba(0, 0, 0, 0.12)";
         ctx.shadowBlur = 12;
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 4;
 
+        // 사각형 바탕 흰색 판
         ctx.fillStyle = "#ffffff";
-        drawRoundedRectPath(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
-        ctx.fill();
+        ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
         ctx.restore();
 
+        // 사각형 사진 영역 클리핑
         ctx.save();
-        drawRoundedRectPath(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
+        ctx.beginPath();
+        ctx.rect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
         ctx.clip();
 
         if (hasRealPhotos) {
@@ -973,12 +913,13 @@
         }
         ctx.restore();
 
+        // 사각형 화이트 테두리 선
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 8;
-        drawRoundedRectStroke(ctx, pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight, CONFIG.photoRadius);
+        ctx.strokeRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
       });
 
-      // ★ 4번 요구사항: 하단 문구 특대형 확대 (74px / 54px)
+      // 하단 문구
       const bannerTop = row2Y + CONFIG.photoHeight + 35;
       const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2) - 8;
       const selectedFont = FONT_MAP[currentFontKey];
@@ -1002,7 +943,7 @@
       ctx.lineJoin = "round";
       ctx.miterLimit = 2;
 
-      // 윗줄: 74px 대형 폰트 + 16px 흰색 테두리
+      // 윗줄 문구
       ctx.font = `bold 74px ${selectedFont}`;
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 16;
@@ -1010,32 +951,13 @@
       ctx.fillStyle = mainTextColor;
       ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 26);
 
-      // 아랫줄: 54px 대형 폰트 + 12px 흰색 테두리
+      // 아랫줄 날짜
       ctx.font = `bold 54px ${selectedFont}`;
       ctx.strokeStyle = "#ffffff";
       ctx.lineWidth = 12;
       ctx.strokeText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
       ctx.fillStyle = subTextColor;
       ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
-    }
-
-    function drawRoundedRectPath(ctx, x, y, width, height, radius) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-    }
-
-    function drawRoundedRectStroke(ctx, x, y, width, height, radius) {
-      drawRoundedRectPath(ctx, x, y, width, height, radius);
-      ctx.stroke();
     }
 
     function wait(ms) {
@@ -1082,9 +1004,8 @@
       modal.style.display = 'none';
     });
 
-    // 폰트 준비 후 초기 렌더링
     document.fonts.ready.then(() => {
-      applyFontToUIAndCanvas('supermagic');
+      applyFontToUIAndCanvas('kotrahope');
     });
 
     initCamera();
