@@ -90,13 +90,13 @@
       box-shadow: 0 0 10px rgba(255, 222, 89, 0.7);
     }
 
-    .theme-frame    { background: #e7f5ff; color: #1864ab; }
-    .theme-ribbon   { background: #e3f2fd; color: #1971c2; }
-    .theme-festival { background: #fff3bf; color: #e67700; }
-    .theme-heart    { background: #ffe3ec; color: #d6336c; }
-    .theme-animals  { background: #f3d9fa; color: #862e9c; }
     .theme-school   { background: #fff0d9; color: #b25000; }
-    .theme-winter   { background: #e7f5ff; color: #1864ab; }
+    .theme-space    { background: #e0e0ff; color: #3b3f8f; }
+    .theme-animals  { background: #f3d9fa; color: #862e9c; }
+    .theme-heart    { background: #ffe3ec; color: #d6336c; }
+
+    .frame-tools { display: flex; gap: 8px; justify-content: center; margin: 4px 0 2px; flex-wrap: wrap; }
+    .frame-tools .chip-btn { font-size: 14px; }
 
     /* 색감 선택 버튼 */
     .chip-btn.tone-soft    { background: #fff0f6; color: #d6336c; }
@@ -384,14 +384,19 @@
       <div class="option-group" style="margin-bottom: 2px;">
         <span style="font-size: 16px;">🎨 배경 선택:</span>
         <div class="chip-group" id="modalThemeChips">
-          <button class="chip-btn theme-frame active" data-theme="frame">✏️ 기본 프레임</button>
-          <button class="chip-btn theme-ribbon" data-theme="ribbon">🎀 하늘리본</button>
-          <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
-          <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
-          <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
-          <button class="chip-btn theme-school" data-theme="school">🎁 기버데이</button>
-          <button class="chip-btn theme-winter" data-theme="winter">❄️ 겨울</button>
+          <button class="chip-btn theme-school active" data-theme="school">🎁 기버데이</button>
+          <button class="chip-btn theme-space" data-theme="space">🚀 우주</button>
+          <button class="chip-btn theme-animals" data-theme="animals">🐾 동물</button>
+          <button class="chip-btn theme-heart" data-theme="heart">💖 하트</button>
         </div>
+      </div>
+
+      <!-- 테마 버튼을 처음 누르면 프레임 사진을 고르게 하고, 한 번 고르면 계속 그 사진을 사용 -->
+      <div class="frame-tools">
+        <label class="chip-btn" style="background:#fff;color:#334155;cursor:pointer;">🖼️ 이 테마 프레임 바꾸기
+          <input type="file" id="frameFile" accept="image/*" style="display:none;">
+        </label>
+        <button class="chip-btn" id="frameReset" style="background:#fff;color:#334155;">↩ 프레임 지우기</button>
       </div>
 
       <canvas id="previewCanvas" width="1200" height="1800"></canvas>
@@ -433,7 +438,7 @@
     // 3번 요구사항: 코트라 희망체 단독 적용
     const APP_FONT = "'KotraHope', sans-serif";
 
-    let currentTheme = 'frame';
+    let currentTheme = 'school';
     let brightnessMultiplier = 1.18;
     let currentTone = 'natural';
 
@@ -501,6 +506,31 @@
       drawPhotoStrip();
     });
 
+    // 프레임 사진 첨부: 테마 버튼을 처음 누르면 파일 선택창이 열리고, 한 번 고르면 브라우저에 저장되어 계속 사용
+    let pendingFrameTheme = null;
+    const frameFileInput = document.getElementById('frameFile');
+    function askFrameFile(theme) {
+      pendingFrameTheme = theme;
+      frameFileInput.click();
+    }
+    frameFileInput.addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      const theme = pendingFrameTheme;
+      e.target.value = '';
+      if (!f || !theme) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        loadFrameImage(theme, reader.result);
+        frameDbSet(theme, reader.result);
+      };
+      reader.readAsDataURL(f);
+    });
+    document.getElementById('frameReset').addEventListener('click', () => {
+      delete frameImages[currentTheme];
+      frameDbDelete(currentTheme);
+      drawPhotoStrip();
+    });
+
     // 모달창 내부 테마 변경 이벤트
     document.getElementById('modalThemeChips').addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
@@ -512,6 +542,8 @@
       });
 
       drawPhotoStrip();
+      // 이 테마에 저장된 프레임 사진이 없으면 바로 첨부하도록 파일 선택창을 띄움
+      if (!frameImages[currentTheme]) askFrameFile(currentTheme);
     });
 
     // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
@@ -611,56 +643,6 @@
     // ==========================================
     // 손그림 드로잉 함수
     // ==========================================
-    function drawDoodleRibbon(ctx, x, y, scale = 0.65, angle = 0, color = "#94c2ec") {
-      ctx.save();
-      ctx.translate(x, y - 5);
-      ctx.rotate(angle * Math.PI / 180);
-      ctx.scale(scale, scale);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 5.0;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(-18, -30, -52, -16, -46, 8);
-      ctx.bezierCurveTo(-40, 24, -16, 13, 0, 0);
-      ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(18, -30, 52, -16, 46, 8);
-      ctx.bezierCurveTo(40, 24, 16, 13, 0, 0);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(-4, 5);
-      ctx.bezierCurveTo(-13, 23, -22, 42, -32, 58);
-      ctx.lineTo(-22, 48);
-      ctx.lineTo(-16, 59);
-      ctx.bezierCurveTo(-10, 42, -3, 23, 0, 5);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(4, 5);
-      ctx.bezierCurveTo(13, 23, 22, 42, 32, 58);
-      ctx.lineTo(22, 48);
-      ctx.lineTo(16, 59);
-      ctx.bezierCurveTo(10, 42, 3, 23, 0, 5);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.arc(0, 1, 8, 0, Math.PI * 2);
-      ctx.fillStyle = "#ffffff";
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.restore();
-    }
-
     function drawDoodleHeart(ctx, x, y, size = 38, angle = 0, color = "#ff7597") {
       ctx.save();
       ctx.translate(x, y - (size * 0.45));
@@ -819,37 +801,6 @@
       ctx.restore();
     }
 
-    function drawDoodleSnow(ctx, x, y, size = 22, angle = 0, color = "#9ec9f0") {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle * Math.PI / 180);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3.2;
-      ctx.lineCap = "round";
-
-      for (let i = 0; i < 6; i++) {
-        const a = (i * 60) * Math.PI / 180;
-        const ex = Math.cos(a) * size;
-        const ey = Math.sin(a) * size;
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(ex, ey);
-        ctx.stroke();
-
-        // 가지 두 개
-        const bx = Math.cos(a) * size * 0.62;
-        const by = Math.sin(a) * size * 0.62;
-        const branch = size * 0.32;
-        ctx.beginPath();
-        ctx.moveTo(bx, by);
-        ctx.lineTo(bx + Math.cos(a + 0.7) * branch, by + Math.sin(a + 0.7) * branch);
-        ctx.moveTo(bx, by);
-        ctx.lineTo(bx + Math.cos(a - 0.7) * branch, by + Math.sin(a - 0.7) * branch);
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
-
     // 학교 로고 그리기 (로고 파일이 없으면 아무것도 그리지 않음)
     function drawSchoolLogo(ctx, centerX) {
       if (!logoLoaded) return;
@@ -946,13 +897,14 @@
     // 하단 장면(구름·언덕 + 큼직한 캐릭터)
     // ==========================================
     const SCENES = {
-      frame:    { paper: "#fffef9", sky: "#d3e8f7", back: "#fbeccb", front: "#c9dfee", line: "#4a5568", spark: "#f4b942" },
-      ribbon:   { paper: "#ffffff", sky: "#cfe4f8", back: "#ffffff", front: "#bcd8f2", line: "#5b86b8", spark: "#95c2eb" },
-      festival: { paper: "#fffef7", sky: "#ffe9b8", back: "#fff6d9", front: "#ffd8a8", line: "#c2571a", spark: "#ff7675" },
-      heart:    { paper: "#fff9fb", sky: "#ffd6e2", back: "#fff0f4", front: "#ffc2d4", line: "#c2255c", spark: "#ff7597" },
-      animals:  { paper: "#fcfaf7", sky: "#e6efd2", back: "#f6efdf", front: "#cfe3a8", line: "#6b4a2e", spark: "#ffc048" },
-      school:   { paper: "#fffdf6", sky: "#ffe7c2", back: "#fff4de", front: "#ffd69a", line: "#9c5a12", spark: "#e8a33d" },
-      winter:   { paper: "#f7fbff", sky: "#d4e8fa", back: "#ffffff", front: "#e4f0fb", line: "#4a77a8", spark: "#8bb8e8" }
+      school:  { paper: "#fffdf6", sky: "#ffe7c2", back: "#fff4de", front: "#ffd69a", line: "#9c5a12", spark: "#e8a33d",
+                 main: "#b25000", sub: "#e8a33d" },
+      space:   { paper: "#1d2152", sky: "#4a3f9a", back: "#3a3f94", front: "#5b4fb0", line: "#c9ccff", spark: "#ffd43b",
+                 main: "#ffffff", sub: "#ffd43b" },
+      animals: { paper: "#fcfaf7", sky: "#e6efd2", back: "#f6efdf", front: "#cfe3a8", line: "#6b4a2e", spark: "#ffc048",
+                 main: "#5c3d2e", sub: "#8b5e3c" },
+      heart:   { paper: "#fff9fb", sky: "#ffd6e2", back: "#fff0f4", front: "#ffc2d4", line: "#c2255c", spark: "#ff7597",
+                 main: "#d6336c", sub: "#f783ac" }
     };
 
     // 폭 300px 주기로 반복되는 뭉게구름 띠 (가운데로 반 잘라도 양쪽이 똑같음)
@@ -987,49 +939,48 @@
       c.restore();
     }
 
-    // 동글동글 유령 (x,y = 몸통 중심)
-    function drawDoodleGhost(c, x, y, s, line) {
+    // 로켓 (x,y = 몸통 중심)
+    function drawDoodleRocket(c, x, y, s, line) {
       c.save();
       c.translate(x, y);
       c.scale(s, s);
       c.strokeStyle = line; c.lineWidth = 3.4 / Math.sqrt(s); c.lineJoin = "round"; c.lineCap = "round";
+      // 불꽃
+      c.fillStyle = "#ffa94d";
+      c.beginPath(); c.moveTo(-10, 40); c.quadraticCurveTo(0, 78, 10, 40); c.closePath(); c.fill(); c.stroke();
+      // 날개
+      c.fillStyle = "#ff6b6b";
+      c.beginPath(); c.moveTo(-18, 14); c.lineTo(-38, 44); c.lineTo(-16, 38); c.closePath(); c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(18, 14); c.lineTo(38, 44); c.lineTo(16, 38); c.closePath(); c.fill(); c.stroke();
+      // 몸통
       c.fillStyle = "#ffffff";
       c.beginPath();
-      c.moveTo(-34, 38);
-      c.lineTo(-34, -14);
-      c.arc(0, -14, 34, Math.PI, 0);
-      c.lineTo(34, 38);
-      c.quadraticCurveTo(28, 56, 17, 40);
-      c.quadraticCurveTo(8, 56, 0, 40);
-      c.quadraticCurveTo(-8, 56, -17, 40);
-      c.quadraticCurveTo(-28, 56, -34, 38);
-      c.closePath();
-      c.fill(); c.stroke();
-      c.fillStyle = line;
-      c.beginPath(); c.arc(-11, -12, 3.2, 0, Math.PI * 2); c.fill();
-      c.beginPath(); c.arc(11, -12, 3.2, 0, Math.PI * 2); c.fill();
-      c.fillStyle = "rgba(255,140,160,0.55)";
-      c.beginPath(); c.ellipse(-19, -4, 5, 3.2, 0, 0, Math.PI * 2); c.fill();
-      c.beginPath(); c.ellipse(19, -4, 5, 3.2, 0, 0, Math.PI * 2); c.fill();
+      c.moveTo(0, -56);
+      c.bezierCurveTo(30, -30, 24, 18, 18, 42);
+      c.lineTo(-18, 42);
+      c.bezierCurveTo(-24, 18, -30, -30, 0, -56);
+      c.closePath(); c.fill(); c.stroke();
+      // 코
+      c.fillStyle = "#ff6b6b";
+      c.beginPath(); c.moveTo(0, -56); c.bezierCurveTo(14, -44, 18, -36, 19, -30); c.lineTo(-19, -30); c.bezierCurveTo(-18, -36, -14, -44, 0, -56); c.closePath(); c.fill(); c.stroke();
+      // 창문
+      c.fillStyle = "#a5d8ff";
+      c.beginPath(); c.arc(0, -8, 10, 0, Math.PI * 2); c.fill(); c.stroke();
       c.restore();
     }
 
-    // 눈사람
-    function drawDoodleSnowman(c, x, y, s, line) {
+    // 고리 있는 행성
+    function drawDoodlePlanet(c, x, y, s, line, body) {
       c.save();
       c.translate(x, y);
       c.scale(s, s);
       c.strokeStyle = line; c.lineWidth = 3.4 / Math.sqrt(s); c.lineJoin = "round"; c.lineCap = "round";
-      c.fillStyle = "#ffffff";
-      c.beginPath(); c.arc(0, 22, 30, 0, Math.PI * 2); c.fill(); c.stroke();
-      c.beginPath(); c.arc(0, -20, 22, 0, Math.PI * 2); c.fill(); c.stroke();
-      c.fillStyle = line;
-      c.beginPath(); c.arc(-8, -24, 2.8, 0, Math.PI * 2); c.fill();
-      c.beginPath(); c.arc(8, -24, 2.8, 0, Math.PI * 2); c.fill();
-      c.fillStyle = "#ff922b";
-      c.beginPath(); c.moveTo(0, -18); c.lineTo(14, -14); c.lineTo(0, -11); c.closePath(); c.fill();
-      c.fillStyle = line;
-      [8, 22, 36].forEach(yy => { c.beginPath(); c.arc(0, yy, 2.6, 0, Math.PI * 2); c.fill(); });
+      c.fillStyle = body;
+      c.beginPath(); c.arc(0, 0, 32, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = "rgba(255,255,255,0.35)";
+      c.beginPath(); c.arc(-10, -10, 8, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(12, 10, 5, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(0, 4, 54, 12, -0.3, 0, Math.PI * 2); c.stroke();
       c.restore();
     }
 
@@ -1040,7 +991,14 @@
 
     // 사진 아래 하단 장면. 가운데 세로 컷 기준 양쪽 반쪽에 똑같이 그림
     function drawBottomScene(c, theme) {
-      const sc = SCENES[theme] || SCENES.frame;
+      const sc = SCENES[theme] || SCENES.school;
+
+      // 우주: 여백 곳곳에 별
+      if (theme === 'space') {
+        const stars = [[22, 40, 9], [1178, 60, 11], [300, 36, 8], [900, 30, 9], [28, 460, 8], [1174, 420, 9],
+                       [600, 770, 10], [28, 900, 9], [1172, 1000, 8], [600, 1100, 10], [26, 1300, 9], [1174, 1250, 10]];
+        stars.forEach(([x, y, r]) => drawSparkle(c, x, y, r, sc.spark));
+      }
 
       // 반짝이
       [0, 600].forEach(ox => {
@@ -1055,71 +1013,103 @@
       const L = 90, R = 510;  // 반쪽(600px) 안에서 캐릭터 가로 위치
       [0, 600].forEach(ox => {
         const xl = ox + L, xr = ox + R;
-        if (theme === 'frame') {
-          drawDoodleGhost(c, xl, baseY - 62, 1.4, sc.line);
-          drawDoodleGhost(c, xr, baseY - 62, 1.4, sc.line);
-          drawSparkle(c, xl + 52, baseY - 150, 12, sc.spark);
-          drawSparkle(c, xr - 52, baseY - 140, 12, sc.spark);
-        } else if (theme === 'ribbon') {
-          drawDoodleGhost(c, xl, baseY - 62, 1.4, sc.line);
-          drawDoodleGhost(c, xr, baseY - 62, 1.4, sc.line);
-          drawDoodleRibbon(c, xl, baseY - 128, 1.05, -8, "#7fb2e6");
-          drawDoodleRibbon(c, xr, baseY - 128, 1.05, 8, "#7fb2e6");
-        } else if (theme === 'festival') {
-          bigDoodle(c, xl, baseY - 60, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'hat', '#ff7675', -8));
-          bigDoodle(c, xr, baseY - 72, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'balloon', '#74b9ff', 6));
-          drawSparkle(c, xl + 62, baseY - 128, 14, '#a29bfe');
-          drawSparkle(c, xr - 62, baseY - 120, 14, '#55efc4');
-        } else if (theme === 'heart') {
-          drawDoodleHeart(c, xl, baseY - 20, 88, -10, '#ff7597');
-          drawDoodleHeart(c, xr, baseY - 20, 76, 10, '#ff5c8a');
-          drawDoodleHeart(c, xl + 66, baseY - 130, 36, 14, '#ffa2b8');
-          drawDoodleHeart(c, xr - 62, baseY - 118, 32, -14, '#ff8fab');
+        if (theme === 'school') {
+          bigDoodle(c, xl, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#e57373', -6));
+          bigDoodle(c, xr, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#4dabf7', 6));
+          drawSparkle(c, xl + 62, baseY - 130, 15, '#e8a33d');
+          drawSparkle(c, xr - 62, baseY - 126, 15, '#b197fc');
+        } else if (theme === 'space') {
+          drawDoodleRocket(c, xl, baseY - 74, 1.35, sc.line);
+          drawDoodlePlanet(c, xr, baseY - 62, 1.35, sc.line, '#ffa94d');
+          drawSparkle(c, xl + 56, baseY - 150, 13, sc.spark);
+          drawSparkle(c, xr - 58, baseY - 140, 13, sc.spark);
         } else if (theme === 'animals') {
           bigDoodle(c, xl, baseY - 64, 2.3, k => drawDoodleAnimal(k, 0, 0, 'bear', 0));
           bigDoodle(c, xr, baseY - 72, 2.3, k => drawDoodleAnimal(k, 0, 0, 'bunny', 0));
           drawDoodleAnimal(c, xl + 68, baseY - 120, 'flower', 0);
           drawDoodleAnimal(c, xr - 66, baseY - 112, 'flower', 0);
-        } else if (theme === 'school') {
-          bigDoodle(c, xl, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#e57373', -6));
-          bigDoodle(c, xr, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#4dabf7', 6));
-          drawSparkle(c, xl + 62, baseY - 130, 15, '#e8a33d');
-          drawSparkle(c, xr - 62, baseY - 126, 15, '#b197fc');
-        } else if (theme === 'winter') {
-          drawDoodleSnowman(c, xl, baseY - 62, 1.4, sc.line);
-          drawDoodleSnowman(c, xr, baseY - 62, 1.4, sc.line);
-          drawDoodleSnow(c, xl + 58, baseY - 140, 20, 10, '#8bb8e8');
-          drawDoodleSnow(c, xr - 58, baseY - 134, 20, -10, '#8bb8e8');
+        } else if (theme === 'heart') {
+          drawDoodleHeart(c, xl, baseY - 20, 88, -10, '#ff7597');
+          drawDoodleHeart(c, xr, baseY - 20, 76, 10, '#ff5c8a');
+          drawDoodleHeart(c, xl + 66, baseY - 130, 36, 14, '#ffa2b8');
+          drawDoodleHeart(c, xr - 62, baseY - 118, 32, -14, '#ff8fab');
         }
       });
 
       cloudBank(c, 1738, [34, 30, 38, 32], sc.front, sc.line, 3.5);
     }
 
+    // ==========================================
+    // 내가 첨부한 프레임 사진 (테마별로 브라우저에 저장 → 다음에 켜도 계속 사용)
+    //  - 1200x1800(2:3) 비율 권장. 사진 칸 위치: 왼쪽 x57.5 / 오른쪽 x657.5, 위 y90 / 아래 y785, 485x655
+    // ==========================================
+    const frameImages = {};
+    function loadFrameImage(theme, src) {
+      const img = new Image();
+      img.onload = () => { frameImages[theme] = img; drawPhotoStrip(); };
+      img.src = src;
+    }
+
+    // IndexedDB (용량이 큰 이미지도 저장 가능). 막혀 있으면 조용히 무시 → 그 경우 새로고침 시 다시 첨부해야 함
+    function frameDb() {
+      return new Promise((resolve, reject) => {
+        try {
+          const req = indexedDB.open('photobooth-frames', 1);
+          req.onupgradeneeded = () => req.result.createObjectStore('frames');
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        } catch (err) { reject(err); }
+      });
+    }
+    function frameDbSet(theme, dataUrl) {
+      return frameDb().then(db => new Promise((res) => {
+        const tx = db.transaction('frames', 'readwrite');
+        tx.objectStore('frames').put(dataUrl, theme);
+        tx.oncomplete = () => res(); tx.onerror = () => res();
+      })).catch(() => {});
+    }
+    function frameDbDelete(theme) {
+      return frameDb().then(db => new Promise((res) => {
+        const tx = db.transaction('frames', 'readwrite');
+        tx.objectStore('frames').delete(theme);
+        tx.oncomplete = () => res(); tx.onerror = () => res();
+      })).catch(() => {});
+    }
+    function frameDbLoadAll() {
+      return frameDb().then(db => {
+        ['school', 'space', 'animals', 'heart'].forEach(theme => {
+          const r = db.transaction('frames').objectStore('frames').get(theme);
+          r.onsuccess = () => { if (r.result) loadFrameImage(theme, r.result); };
+        });
+      }).catch(() => {});
+    }
+    frameDbLoadAll();
+
     function drawPhotoStrip() {
       ctx.filter = "none";
 
       // 배경 그림은 별도 레이어에 그린 뒤 '색연필 질감'을 입혀서 합침
-      let paper = "#ffffff";
+      const frameImg = frameImages[currentTheme];
+      const scene = SCENES[currentTheme] || SCENES.school;
       const bgCtx = getBgLayer();
       bgCtx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      {
-        const ctx = bgCtx; // 이 블록 안의 그림은 모두 레이어로 그려짐
-      // 그림은 사진 아래 하단 장면에만 그림 (구름 위에 캐릭터)
-      paper = (SCENES[currentTheme] || SCENES.frame).paper;
-      drawBottomScene(ctx, currentTheme);
-      }
-      ctx.fillStyle = paper;
-      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      {
-        // 하단으로 갈수록 하늘색(테마색)으로 번지는 배경
+      if (frameImg) {
+        // 내 프레임 사진을 배경 전체로 사용
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        ctx.drawImage(frameImg, 0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      } else {
+        drawBottomScene(bgCtx, currentTheme);
+        ctx.fillStyle = scene.paper;
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        // 하단으로 갈수록 테마색으로 번지는 배경
         const g = ctx.createLinearGradient(0, 1250, 0, CONFIG.canvasHeight);
-        g.addColorStop(0, paper);
-        g.addColorStop(1, (SCENES[currentTheme] || SCENES.frame).sky);
+        g.addColorStop(0, scene.paper);
+        g.addColorStop(1, scene.sky);
         ctx.fillStyle = g;
         ctx.fillRect(0, 1250, CONFIG.canvasWidth, CONFIG.canvasHeight - 1250);
+        compositePencilLayer();
       }
-      compositePencilLayer();
 
       // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
       const col2X = CONFIG.canvasWidth / 2 + CONFIG.marginLeft;
@@ -1177,25 +1167,8 @@
       ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
 
-      let mainTextColor = "#0284c7";
-      let subTextColor  = "#38bdf8";
-
-      if (currentTheme === 'festival') {
-        mainTextColor = "#d9480f";
-        subTextColor  = "#f76707";
-      } else if (currentTheme === 'heart') {
-        mainTextColor = "#d6336c";
-        subTextColor  = "#f783ac";
-      } else if (currentTheme === 'animals') {
-        mainTextColor = "#5c3d2e";
-        subTextColor  = "#8b5e3c";
-      } else if (currentTheme === 'school') {
-        mainTextColor = "#b25000";
-        subTextColor  = "#e8a33d";
-      } else if (currentTheme === 'winter') {
-        mainTextColor = "#1864ab";
-        subTextColor  = "#4dabf7";
-      }
+      const mainTextColor = scene.main;
+      const subTextColor  = scene.sub;
 
       // 사진을 가운데로 잘라 두 명이 나눠 가져도 되도록, 왼쪽·오른쪽 사진 아래에 똑같은 문구를 넣음
       const bannerCenters = [CONFIG.marginLeft + CONFIG.photoWidth / 2, col2X + CONFIG.photoWidth / 2];
@@ -1209,14 +1182,14 @@
       };
       bannerCenters.forEach((cx) => {
         ctx.fillStyle = mainTextColor;
-        fitText("♥ 고척초등학교 ♥", 44, "bold");
-        ctx.fillText("♥ 고척초등학교 ♥", cx, 1588);
-        fitText("기버데이", 60, "bold");
-        ctx.fillText("기버데이", cx, 1654);
+        fitText("고척초등학교", 44, "bold");
+        ctx.fillText("고척초등학교", cx, 1588);
+        fitText("♥기버데이♥", 60, "bold");
+        ctx.fillText("♥기버데이♥", cx, 1654);
 
         ctx.fillStyle = subTextColor;
-        fitText("11월 19일", 38, "bold");
-        ctx.fillText("11월 19일", cx, 1706);
+        fitText("2026.11.19", 38, "bold");
+        ctx.fillText("2026.11.19", cx, 1706);
 
         // 학교 로고 (logo.png 가 있으면 문구 위에 자동 삽입)
         drawSchoolLogo(ctx, cx);
