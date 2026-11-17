@@ -939,48 +939,11 @@
       c.globalAlpha = 1;
     }
 
-    // '기본 프레임' 테마: 가장자리를 색연필로 칠한 단색 테두리
-    function drawPencilFrame(c) {
-      const rnd = seededRandom(11);
-      const W = CONFIG.canvasWidth, H = CONFIG.canvasHeight;
-      const color = "#74b0e3";
-
-      // 가장자리 띠: 짧은 빗금을 촘촘히
-      const bandIn = 12, bandOut = 44, step = 13;
-      for (let x = 0; x < W; x += step) {
-        pencilLine(c, x, bandIn, x + 9, bandOut, color, 3, rnd);
-        pencilLine(c, x, H - bandOut, x + 9, H - bandIn, color, 3, rnd);
-      }
-      for (let y = 0; y < H; y += step) {
-        pencilLine(c, bandIn, y, bandOut, y + 9, color, 3, rnd);
-        pencilLine(c, W - bandOut, y, W - bandIn, y + 9, color, 3, rnd);
-      }
-
-      // 띠 안쪽 테두리선 (손으로 그은 듯 이어 그림)
-      const inset = 56;
-      const seg = 90;
-      for (let x = inset; x < W - inset; x += seg) {
-        const x2 = Math.min(x + seg + 4, W - inset);
-        pencilLine(c, x, inset, x2, inset, color, 4, rnd);
-        pencilLine(c, x, H - inset, x2, H - inset, color, 4, rnd);
-      }
-      for (let y = inset; y < H - inset; y += seg) {
-        const y2 = Math.min(y + seg + 4, H - inset);
-        pencilLine(c, inset, y, inset, y2, color, 4, rnd);
-        pencilLine(c, W - inset, y, W - inset, y2, color, 4, rnd);
-      }
-    }
-
     // ==========================================
     // 캔버스 렌더링
     // ==========================================
     function drawPhotoStrip() {
       ctx.filter = "none";
-
-      const symRowA = [85, 340, 600, 860, 1115];
-      const symRowB = [210, 470, 730, 990];
-      // 하단 문구 자리(y 1450 아래)에는 장식을 그리지 않아 글씨가 깨끗하게 보이게 함
-      const yPositions = [80, 240, 390, 540, 690, 840, 960, 1110, 1260, 1410];
 
       // 배경 그림은 별도 레이어에 그린 뒤 '색연필 질감'을 입혀서 합침
       let paper = "#ffffff";
@@ -988,107 +951,36 @@
       bgCtx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
       {
         const ctx = bgCtx; // 이 블록 안의 그림은 모두 레이어로 그려짐
+      // 그림은 사진 아래 하단 띠(y≈1768)에만 한 줄로 배치. 그 위쪽 영역은 비워 둠.
+      const bandY = 1768;
+      // 세로 반 컷 시 그림이 잘리지 않도록 중앙선(600)을 피해 양쪽 반쪽에 똑같이 배치
+      const bandXs = [70, 185, 300, 415, 530, 670, 785, 900, 1015, 1130];
+      const bandRot = (i) => ((i * 37) % 24) - 12;
+      const papers = { frame: "#fffef9", ribbon: "#ffffff", festival: "#fffef7", heart: "#fff9fb",
+                       animals: "#fcfaf7", school: "#fffdf6", winter: "#f7fbff" };
+      paper = papers[currentTheme] || "#ffffff";
+
       if (currentTheme === 'frame') {
-        paper = "#fffef9";
-        drawPencilFrame(ctx);
-
+        const rnd = seededRandom(7);
+        pencilLine(ctx, 40, bandY, CONFIG.canvasWidth - 40, bandY, "#74c0fc", 5, rnd);
       } else if (currentTheme === 'ribbon') {
-        paper = "#ffffff";
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x, cIdx) => {
-            const rot = ((x * 3 + y * 7) % 32) - 16;
-            const scale = 0.62 + ((cIdx + rowIdx) % 3) * 0.03;
-            drawDoodleRibbon(ctx, x, y, scale, rot, "#95c2eb");
-          });
-        });
-
+        bandXs.forEach((x, i) => drawDoodleRibbon(ctx, x, bandY, 0.4, bandRot(i), "#95c2eb"));
       } else if (currentTheme === 'festival') {
-        paper = "#fffef7";
-
         const items = ['hat', 'balloon', 'star'];
         const colors = ['#ff7675', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe'];
-        let idx = 0;
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x) => {
-            const item = items[idx % items.length];
-            const col = colors[idx % colors.length];
-            const rot = ((x * 4 + y * 6) % 30) - 15;
-            drawDoodlePartyItem(ctx, x, y, item, col, rot);
-            idx++;
-          });
-        });
-
+        bandXs.forEach((x, i) => drawDoodlePartyItem(ctx, x, bandY, items[i % 3], colors[i % 5], bandRot(i)));
       } else if (currentTheme === 'heart') {
-        paper = "#fff9fb";
-
         const heartColors = ['#ff7597', '#ff8fab', '#ffa2b8', '#ff5c8a'];
-        let cIdx = 0;
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x) => {
-            const rot = ((x * 5 + y * 3) % 36) - 18;
-            const size = 36 + ((x * y) % 6);
-            drawDoodleHeart(ctx, x, y, size, rot, heartColors[cIdx % heartColors.length]);
-            cIdx++;
-          });
-        });
-
+        bandXs.forEach((x, i) => drawDoodleHeart(ctx, x, bandY, 26, bandRot(i), heartColors[i % 4]));
       } else if (currentTheme === 'animals') {
-        paper = "#fcfaf7";
-
         const animals = ['bear', 'bunny', 'flower'];
-        let aIdx = 0;
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x) => {
-            const type = animals[aIdx % animals.length];
-            const rot = ((x * 2 + y * 7) % 26) - 13;
-            drawDoodleAnimal(ctx, x, y, type, rot);
-            aIdx++;
-          });
-        });
-
+        bandXs.forEach((x, i) => drawDoodleAnimal(ctx, x, bandY, animals[i % 3], bandRot(i)));
       } else if (currentTheme === 'school') {
-        paper = "#fffdf6";
-
         const schoolColors = ['#e8a33d', '#e57373', '#4dabf7', '#69db7c', '#b197fc'];
-        let sIdx = 0;
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x) => {
-            const rot = ((x * 3 + y * 5) % 30) - 15;
-            const isGift = sIdx % 3 !== 1;
-            if (isGift) {
-              drawDoodlePartyItem(ctx, x, y, 'gift', schoolColors[sIdx % schoolColors.length], rot);
-            } else {
-              drawDoodlePartyItem(ctx, x, y, 'star', schoolColors[sIdx % schoolColors.length], rot);
-            }
-            sIdx++;
-          });
-        });
-
+        bandXs.forEach((x, i) => drawDoodlePartyItem(ctx, x, bandY, i % 3 !== 1 ? 'gift' : 'star', schoolColors[i % 5], bandRot(i)));
       } else if (currentTheme === 'winter') {
-        paper = "#f7fbff";
-
         const snowColors = ['#9ec9f0', '#b8d8f5', '#8bb8e8'];
-        let wIdx = 0;
-
-        yPositions.forEach((y, rowIdx) => {
-          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
-          cols.forEach((x) => {
-            const size = 16 + ((x + y) % 14);
-            const rot = ((x * 2 + y * 3) % 40) - 20;
-            drawDoodleSnow(ctx, x, y, size, rot, snowColors[wIdx % snowColors.length]);
-            wIdx++;
-          });
-        });
+        bandXs.forEach((x, i) => drawDoodleSnow(ctx, x, bandY, 18, bandRot(i), snowColors[i % 3]));
       }
       }
       ctx.fillStyle = paper;
