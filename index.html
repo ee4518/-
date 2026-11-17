@@ -90,6 +90,7 @@
       box-shadow: 0 0 10px rgba(255, 222, 89, 0.7);
     }
 
+    .theme-frame    { background: #e7f5ff; color: #1864ab; }
     .theme-ribbon   { background: #e3f2fd; color: #1971c2; }
     .theme-festival { background: #fff3bf; color: #e67700; }
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
@@ -383,7 +384,8 @@
       <div class="option-group" style="margin-bottom: 2px;">
         <span style="font-size: 16px;">🎨 배경 선택:</span>
         <div class="chip-group" id="modalThemeChips">
-          <button class="chip-btn theme-ribbon active" data-theme="ribbon">🎀 하늘리본</button>
+          <button class="chip-btn theme-frame active" data-theme="frame">✏️ 기본 프레임</button>
+          <button class="chip-btn theme-ribbon" data-theme="ribbon">🎀 하늘리본</button>
           <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
           <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
           <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
@@ -432,7 +434,7 @@
     // 3번 요구사항: 코트라 희망체 단독 적용
     const APP_FONT = "'KotraHope', sans-serif";
 
-    let currentTheme = 'ribbon';
+    let currentTheme = 'frame';
     let brightnessMultiplier = 1.18;
     let currentTone = 'natural';
 
@@ -850,14 +852,124 @@
     }
 
     // 학교 로고 그리기 (로고 파일이 없으면 아무것도 그리지 않음)
-    function drawSchoolLogo(ctx) {
+    function drawSchoolLogo(ctx, centerX) {
       if (!logoLoaded) return;
-      const size = 66;
-      const x = (CONFIG.canvasWidth - size) / 2;
-      const y = 1486;
+      const size = 54;
+      const x = centerX - size / 2;
+      const y = 1474;
       ctx.save();
       ctx.drawImage(schoolLogo, x, y, size, size);
       ctx.restore();
+    }
+
+    // ==========================================
+    // 색연필 질감 도우미
+    // ==========================================
+    // 매번 똑같은 그림이 나오도록 '정해진 순서의 난수'를 사용
+    function seededRandom(seed) {
+      return function () {
+        seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+        let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    let bgLayer = null;
+    let grainLayer = null;
+
+    function getBgLayer() {
+      if (!bgLayer) {
+        bgLayer = document.createElement('canvas');
+        bgLayer.width = CONFIG.canvasWidth;
+        bgLayer.height = CONFIG.canvasHeight;
+      }
+      return bgLayer.getContext('2d');
+    }
+
+    // 종이 결처럼 군데군데 비는 '알갱이' (한 번만 만들어 재사용)
+    function getGrain() {
+      if (grainLayer) return grainLayer;
+      grainLayer = document.createElement('canvas');
+      grainLayer.width = CONFIG.canvasWidth;
+      grainLayer.height = CONFIG.canvasHeight;
+      const gctx = grainLayer.getContext('2d');
+      const img = gctx.createImageData(grainLayer.width, grainLayer.height);
+      const rnd = seededRandom(2026);
+      for (let i = 0; i < img.data.length; i += 4) {
+        const v = rnd();
+        img.data[i + 3] = v < 0.28 ? 210 : (v < 0.45 ? 90 : 0);
+      }
+      gctx.putImageData(img, 0, 0);
+      return grainLayer;
+    }
+
+    // 그려 둔 배경 레이어에 알갱이 구멍을 내고, 살짝 어긋나게 두 번 겹쳐 '손으로 덧칠한' 느낌을 냄
+    function compositePencilLayer() {
+      const lctx = bgLayer.getContext('2d');
+      lctx.globalCompositeOperation = 'destination-out';
+      lctx.drawImage(getGrain(), 0, 0);
+      lctx.globalCompositeOperation = 'source-over';
+
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(bgLayer, 0, 0);
+      ctx.globalAlpha = 0.5;
+      ctx.drawImage(bgLayer, 1.6, -1.2);
+      ctx.restore();
+    }
+
+    // 살짝 떨리는 색연필 선 한 줄
+    function pencilLine(c, x1, y1, x2, y2, color, width, rnd) {
+      const jitter = 2.2;
+      c.strokeStyle = color;
+      c.lineCap = "round";
+      for (let pass = 0; pass < 2; pass++) {
+        c.globalAlpha = 0.5 + rnd() * 0.4;
+        c.lineWidth = width * (0.7 + rnd() * 0.6);
+        c.beginPath();
+        c.moveTo(x1 + (rnd() - 0.5) * jitter * 2, y1 + (rnd() - 0.5) * jitter * 2);
+        c.quadraticCurveTo(
+          (x1 + x2) / 2 + (rnd() - 0.5) * jitter * 3,
+          (y1 + y2) / 2 + (rnd() - 0.5) * jitter * 3,
+          x2 + (rnd() - 0.5) * jitter * 2,
+          y2 + (rnd() - 0.5) * jitter * 2
+        );
+        c.stroke();
+      }
+      c.globalAlpha = 1;
+    }
+
+    // '기본 프레임' 테마: 가장자리를 색연필로 칠한 단색 테두리
+    function drawPencilFrame(c) {
+      const rnd = seededRandom(11);
+      const W = CONFIG.canvasWidth, H = CONFIG.canvasHeight;
+      const color = "#74b0e3";
+
+      // 가장자리 띠: 짧은 빗금을 촘촘히
+      const bandIn = 12, bandOut = 44, step = 13;
+      for (let x = 0; x < W; x += step) {
+        pencilLine(c, x, bandIn, x + 9, bandOut, color, 3, rnd);
+        pencilLine(c, x, H - bandOut, x + 9, H - bandIn, color, 3, rnd);
+      }
+      for (let y = 0; y < H; y += step) {
+        pencilLine(c, bandIn, y, bandOut, y + 9, color, 3, rnd);
+        pencilLine(c, W - bandOut, y, W - bandIn, y + 9, color, 3, rnd);
+      }
+
+      // 띠 안쪽 테두리선 (손으로 그은 듯 이어 그림)
+      const inset = 56;
+      const seg = 90;
+      for (let x = inset; x < W - inset; x += seg) {
+        const x2 = Math.min(x + seg + 4, W - inset);
+        pencilLine(c, x, inset, x2, inset, color, 4, rnd);
+        pencilLine(c, x, H - inset, x2, H - inset, color, 4, rnd);
+      }
+      for (let y = inset; y < H - inset; y += seg) {
+        const y2 = Math.min(y + seg + 4, H - inset);
+        pencilLine(c, inset, y, inset, y2, color, 4, rnd);
+        pencilLine(c, W - inset, y, W - inset, y2, color, 4, rnd);
+      }
     }
 
     // ==========================================
@@ -868,11 +980,21 @@
 
       const symRowA = [85, 340, 600, 860, 1115];
       const symRowB = [210, 470, 730, 990];
-      const yPositions = [80, 240, 390, 540, 690, 840, 960, 1110, 1260, 1410, 1560, 1720];
+      // 하단 문구 자리(y 1450 아래)에는 장식을 그리지 않아 글씨가 깨끗하게 보이게 함
+      const yPositions = [80, 240, 390, 540, 690, 840, 960, 1110, 1260, 1410];
 
-      if (currentTheme === 'ribbon') {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      // 배경 그림은 별도 레이어에 그린 뒤 '색연필 질감'을 입혀서 합침
+      let paper = "#ffffff";
+      const bgCtx = getBgLayer();
+      bgCtx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      {
+        const ctx = bgCtx; // 이 블록 안의 그림은 모두 레이어로 그려짐
+      if (currentTheme === 'frame') {
+        paper = "#fffef9";
+        drawPencilFrame(ctx);
+
+      } else if (currentTheme === 'ribbon') {
+        paper = "#ffffff";
 
         yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
@@ -884,8 +1006,7 @@
         });
 
       } else if (currentTheme === 'festival') {
-        ctx.fillStyle = "#fffef7";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        paper = "#fffef7";
 
         const items = ['hat', 'balloon', 'star'];
         const colors = ['#ff7675', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe'];
@@ -903,8 +1024,7 @@
         });
 
       } else if (currentTheme === 'heart') {
-        ctx.fillStyle = "#fff9fb";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        paper = "#fff9fb";
 
         const heartColors = ['#ff7597', '#ff8fab', '#ffa2b8', '#ff5c8a'];
         let cIdx = 0;
@@ -920,8 +1040,7 @@
         });
 
       } else if (currentTheme === 'animals') {
-        ctx.fillStyle = "#fcfaf7";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        paper = "#fcfaf7";
 
         const animals = ['bear', 'bunny', 'flower'];
         let aIdx = 0;
@@ -937,8 +1056,7 @@
         });
 
       } else if (currentTheme === 'school') {
-        ctx.fillStyle = "#fffdf6";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        paper = "#fffdf6";
 
         const schoolColors = ['#e8a33d', '#e57373', '#4dabf7', '#69db7c', '#b197fc'];
         let sIdx = 0;
@@ -958,8 +1076,7 @@
         });
 
       } else if (currentTheme === 'winter') {
-        ctx.fillStyle = "#f7fbff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+        paper = "#f7fbff";
 
         const snowColors = ['#9ec9f0', '#b8d8f5', '#8bb8e8'];
         let wIdx = 0;
@@ -974,6 +1091,10 @@
           });
         });
       }
+      }
+      ctx.fillStyle = paper;
+      ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      compositePencilLayer();
 
       // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
       const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
@@ -1029,6 +1150,7 @@
       const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2) - 8;
 
       ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
 
       let mainTextColor = "#0284c7";
       let subTextColor  = "#38bdf8";
@@ -1050,26 +1172,30 @@
         subTextColor  = "#4dabf7";
       }
 
-      // ★ 1번 요구사항: 흰색 외곽선(strokeText) 완전히 빼고 깔끔하게 렌더링
-      // 윗줄: 74px 대형 폰트 (캔버스를 넘치면 자동으로 줄어듦)
-      const mainText = "♥2026 고척초등학교 기버데이♥";
-      let mainSize = 74;
-      const maxTextWidth = CONFIG.canvasWidth - 120;
-      ctx.font = `bold ${mainSize}px ${APP_FONT}`;
-      while (ctx.measureText(mainText).width > maxTextWidth && mainSize > 40) {
-        mainSize -= 2;
-        ctx.font = `bold ${mainSize}px ${APP_FONT}`;
-      }
-      ctx.fillStyle = mainTextColor;
-      ctx.fillText(mainText, CONFIG.canvasWidth / 2, bannerCenterY - 26);
+      // 사진을 가운데로 잘라 두 명이 나눠 가져도 되도록, 왼쪽·오른쪽 사진 아래에 똑같은 문구를 넣음
+      const bannerCenters = [CONFIG.marginLeft + CONFIG.photoWidth / 2, col2X + CONFIG.photoWidth / 2];
+      const maxTextWidth = CONFIG.photoWidth - 20;
+      const fitText = (str, size, weight) => {
+        ctx.font = `${weight} ${size}px ${APP_FONT}`;
+        while (ctx.measureText(str).width > maxTextWidth && size > 24) {
+          size -= 2;
+          ctx.font = `${weight} ${size}px ${APP_FONT}`;
+        }
+      };
+      bannerCenters.forEach((cx) => {
+        ctx.fillStyle = mainTextColor;
+        fitText("♥ 고척초등학교 ♥", 54, "bold");
+        ctx.fillText("♥ 고척초등학교 ♥", cx, 1590);
+        fitText("기버데이", 70, "bold");
+        ctx.fillText("기버데이", cx, 1664);
 
-      // 아랫줄: 54px 대형 폰트
-      ctx.font = `bold 54px ${APP_FONT}`;
-      ctx.fillStyle = subTextColor;
-      ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
+        ctx.fillStyle = subTextColor;
+        fitText("11월 19일", 46, "bold");
+        ctx.fillText("11월 19일", cx, 1722);
 
-      // 학교 로고 (logo.png 가 있으면 하단 문구 위에 자동 삽입)
-      drawSchoolLogo(ctx);
+        // 학교 로고 (logo.png 가 있으면 문구 위에 자동 삽입)
+        drawSchoolLogo(ctx, cx);
+      });
 
       ctx.filter = "none";
     }
