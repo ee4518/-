@@ -6,17 +6,11 @@
   <title>고척초등학교 기버데이 인생네컷</title>
   
   <style>
-    /* 글씨체는 앱 폴더의 fonts/ 안 파일을 사용 (인터넷이 없어도 똑같이 나옴) */
-    @font-face {
-      font-family: 'KotraHope';
-      src: url('fonts/KOTRAHOPE.woff2') format('woff2');
-      font-weight: normal;
-      font-style: normal;
-    }
+    /* 글씨체: 카페24 슈퍼매직체 하나만 사용 (앱 폴더의 fonts/ 파일이라 인터넷이 없어도 똑같이 나옴) */
     @font-face {
       font-family: 'Cafe24Supermagic';
       src: url('fonts/Cafe24Supermagic-Bold.woff2') format('woff2');
-      font-weight: bold;
+      font-weight: 100 900;
       font-style: normal;
     }
 
@@ -29,7 +23,7 @@
       padding: 10px 0;
       background-color: #ffffff;
       color: #222222;
-      font-family: 'KotraHope', sans-serif !important;
+      font-family: 'Cafe24Supermagic', sans-serif !important;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -43,7 +37,7 @@
       margin-bottom: 8px;
       color: #e6a800;
       text-shadow: 0 2px 6px rgba(0,0,0,0.15);
-      font-family: 'KotraHope', sans-serif !important;
+      font-family: 'Cafe24Supermagic', sans-serif !important;
       letter-spacing: 0.5px;
     }
 
@@ -70,7 +64,7 @@
     }
 
     button, .chip-btn, .btn-main, .btn-sub, .btn-modal {
-      font-family: 'KotraHope', sans-serif !important;
+      font-family: 'Cafe24Supermagic', sans-serif !important;
     }
 
     .chip-group {
@@ -101,8 +95,8 @@
     .theme-animals  { background: #f3d9fa; color: #862e9c; }
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
 
-    .frame-tools { display: flex; gap: 8px; justify-content: center; margin: 4px 0 2px; flex-wrap: wrap; }
-    .frame-tools .chip-btn { font-size: 14px; }
+
+
 
     /* 색감 선택 버튼 */
     .chip-btn.tone-soft    { background: #fff0f6; color: #d6336c; }
@@ -297,12 +291,6 @@
     }
     .cam-error button:hover { background: #0369a1; }
 
-    /* 프레임 사진 크기가 다를 때 경고 */
-    .frame-warn {
-      display: none; margin: 4px auto 0; max-width: 520px; text-align: center;
-      font-size: 14px; color: #92400e; background: #fef3c7; border-radius: 10px; padding: 6px 12px;
-    }
-
     @page { size: 4in 6in; margin: 0; }
     @media print {
       body * { visibility: hidden; }
@@ -371,25 +359,6 @@
         </div>
       </div>
 
-      <!-- 테마 버튼을 처음 누르면 프레임 사진을 고르게 하고, 한 번 고르면 계속 그 사진을 사용 -->
-      <div class="frame-tools">
-        <label id="frameChange" class="chip-btn" style="background:#fff;color:#334155;cursor:pointer;">🖼️ 이 테마 프레임 바꾸기
-          <input type="file" id="frameFile" accept="image/*" style="display:none;">
-        </label>
-        <button class="chip-btn" id="frameReset" style="background:#fff;color:#334155;">↩ 프레임 지우기</button>
-      </div>
-
-      <!-- 하단 문구(고척초등학교 / ♥기버데이♥ / 날짜) 글씨체 선택 -->
-      <div class="option-group" style="margin: 2px 0 0; justify-content: center;">
-        <span style="font-size: 16px; color: #e2e8f0;">✏️ 글씨체:</span>
-        <div class="chip-group" id="fontChips">
-          <button class="chip-btn font-chip active" data-font="kotra" style="background:#fff;color:#334155;">코트라 희망체</button>
-          <button class="chip-btn font-chip" data-font="cafe24" style="background:#fff;color:#334155;">카페24 슈퍼매직</button>
-        </div>
-      </div>
-
-      <div id="frameWarn" class="frame-warn" role="status"></div>
-
       <canvas id="previewCanvas" width="1200" height="1800"></canvas>
 
       <div class="modal-buttons">
@@ -414,18 +383,8 @@
       countdownSec: 5
     };
 
-    // 3번 요구사항: 코트라 희망체 단독 적용
-    const APP_FONT = "'KotraHope', sans-serif";
-    // 하단 문구(고척초등학교 / ♥기버데이♥ / 날짜) 글씨체. 팝업의 [글씨체] 버튼으로 바꾸고, 고른 글씨체는 기억해 둠
-    const BANNER_FONTS = {
-      kotra:  "'KotraHope', sans-serif",
-      cafe24: "'Cafe24Supermagic', sans-serif"
-    };
-    let bannerFontKey = 'kotra';
-    try {
-      const saved = localStorage.getItem('photobooth-banner-font');
-      if (saved && BANNER_FONTS[saved]) bannerFontKey = saved;
-    } catch (err) { /* 저장 못 해도 괜찮음 */ }
+    // 글씨체는 카페24 슈퍼매직체 하나로 통일 (화면, 인쇄물 하단 문구 모두)
+    const APP_FONT = "'Cafe24Supermagic', sans-serif";
 
     let currentTheme = 'school';
     let brightnessMultiplier = 1.18;
@@ -494,51 +453,7 @@
       drawPhotoStrip();
     });
 
-    // 글씨체 선택
-    function syncFontChips() {
-      document.querySelectorAll('#fontChips .font-chip').forEach(b => {
-        b.classList.toggle('active', b.dataset.font === bannerFontKey);
-      });
-    }
-    syncFontChips();
-    document.getElementById('fontChips').addEventListener('click', (e) => {
-      const btn = e.target.closest('.font-chip');
-      if (!btn) return;
-      bannerFontKey = btn.dataset.font;
-      try { localStorage.setItem('photobooth-banner-font', bannerFontKey); } catch (err) {}
-      syncFontChips();
-      // 고른 글씨체가 준비된 뒤에 다시 그림
-      document.fonts.load(`bold 40px ${BANNER_FONTS[bannerFontKey]}`).catch(() => {}).then(drawPhotoStrip);
-      drawPhotoStrip();
-    });
-
-    // 프레임 사진 첨부: 테마 버튼을 처음 누르면 파일 선택창이 열리고, 한 번 고르면 브라우저에 저장되어 계속 사용
-    let pendingFrameTheme = null;
-    const frameFileInput = document.getElementById('frameFile');
-    function askFrameFile(theme) {
-      pendingFrameTheme = theme;
-      frameFileInput.click();
-    }
-    document.getElementById('frameChange').addEventListener('click', () => { pendingFrameTheme = currentTheme; });
-    frameFileInput.addEventListener('change', (e) => {
-      const f = e.target.files && e.target.files[0];
-      const theme = pendingFrameTheme;
-      e.target.value = '';
-      if (!f || !theme) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        loadFrameImage(theme, reader.result);
-        frameDbSet(theme, reader.result);
-      };
-      reader.readAsDataURL(f);
-    });
-    document.getElementById('frameReset').addEventListener('click', () => {
-      delete frameImages[currentTheme];
-      frameDbDelete(currentTheme);
-      drawPhotoStrip();
-    });
-
-    // 모달창 내부 테마 변경 이벤트
+    // 모달창 내부 테마 변경 이벤트 (프레임 사진은 frames/ 폴더 것이 자동 적용됨)
     document.getElementById('modalThemeChips').addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
       if (!btn) return;
@@ -549,8 +464,6 @@
       });
 
       drawPhotoStrip();
-      // 이 테마에 저장된 프레임 사진이 없으면 바로 첨부하도록 파일 선택창을 띄움
-      if (!frameImages[currentTheme]) askFrameFile(currentTheme);
     });
 
     // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
@@ -1031,71 +944,25 @@
     }
 
     // ==========================================
-    // 내가 첨부한 프레임 사진 (테마별로 브라우저에 저장 → 다음에 켜도 계속 사용)
-    //  - 1200x1800(2:3) 비율 권장. 사진 칸 위치: 왼쪽 x57.5 / 오른쪽 x657.5, 위 y90 / 아래 y785, 485x655
+    // 프레임 사진: frames/ 폴더의 파일을 테마마다 자동으로 사용 (1200x1800, 2:3)
+    //  - 사진 칸 위치: 왼쪽 x57.5 / 오른쪽 x657.5, 위 y90 / 아래 y785, 크기 485x655
+    //  - 프레임 파일이 없거나 안 열리면 코드로 그린 기본 그림이 대신 나옴
     // ==========================================
+    const FRAME_FILES = {
+      school:  'frames/school.webp',   // 기버데이
+      space:   'frames/space.webp',    // 우주
+      animals: 'frames/animals.webp',  // 동물
+      heart:   'frames/heart.webp'     // 하트
+    };
     const frameImages = {};
-    function loadFrameImage(theme, src) {
+    Object.keys(FRAME_FILES).forEach(theme => {
       const img = new Image();
       img.onload = () => { frameImages[theme] = img; drawPhotoStrip(); };
-      img.onerror = () => {
-        const box = document.getElementById('frameWarn');
-        if (box) { box.textContent = '⚠️ 이 사진은 열 수 없어요. 다른 사진(PNG, JPG)을 골라 주세요.'; box.style.display = 'block'; }
-      };
-      img.src = src;
-    }
-
-    // IndexedDB (용량이 큰 이미지도 저장 가능). 막혀 있으면 조용히 무시 → 그 경우 새로고침 시 다시 첨부해야 함
-    function frameDb() {
-      return new Promise((resolve, reject) => {
-        try {
-          const req = indexedDB.open('photobooth-frames', 1);
-          req.onupgradeneeded = () => req.result.createObjectStore('frames');
-          req.onsuccess = () => resolve(req.result);
-          req.onerror = () => reject(req.error);
-        } catch (err) { reject(err); }
-      });
-    }
-    function frameDbSet(theme, dataUrl) {
-      return frameDb().then(db => new Promise((res) => {
-        const tx = db.transaction('frames', 'readwrite');
-        tx.objectStore('frames').put(dataUrl, theme);
-        tx.oncomplete = () => res(); tx.onerror = () => res();
-      })).catch(() => {});
-    }
-    function frameDbDelete(theme) {
-      return frameDb().then(db => new Promise((res) => {
-        const tx = db.transaction('frames', 'readwrite');
-        tx.objectStore('frames').delete(theme);
-        tx.oncomplete = () => res(); tx.onerror = () => res();
-      })).catch(() => {});
-    }
-    function frameDbLoadAll() {
-      return frameDb().then(db => {
-        ['school', 'space', 'animals', 'heart'].forEach(theme => {
-          const r = db.transaction('frames').objectStore('frames').get(theme);
-          r.onsuccess = () => { if (r.result) loadFrameImage(theme, r.result); };
-        });
-      }).catch(() => {});
-    }
-    frameDbLoadAll();
-
-    // 프레임 사진 크기가 1200x1800(2:3)과 다르면 경고
-    function updateFrameWarn() {
-      const box = document.getElementById('frameWarn');
-      if (!box) return;
-      const img = frameImages[currentTheme];
-      if (img && Math.abs(img.naturalWidth / img.naturalHeight - CONFIG.canvasWidth / CONFIG.canvasHeight) > 0.01) {
-        box.textContent = `⚠️ 프레임 사진 크기가 달라요 (지금 ${img.naturalWidth}×${img.naturalHeight}). ${CONFIG.canvasWidth}×${CONFIG.canvasHeight} 크기로 만들면 안 찌그러져요.`;
-        box.style.display = 'block';
-      } else {
-        box.style.display = 'none';
-      }
-    }
+      img.src = FRAME_FILES[theme];
+    });
 
     function drawPhotoStrip() {
       ctx.filter = "none";
-      updateFrameWarn();
 
       // 배경 그림은 별도 레이어에 그린 뒤 '색연필 질감'을 입혀서 합침
       const frameImg = frameImages[currentTheme];
@@ -1184,10 +1051,10 @@
       const bannerCenters = [CONFIG.marginLeft + CONFIG.photoWidth / 2, col2X + CONFIG.photoWidth / 2];
       const maxTextWidth = 330;
       const fitText = (str, size, weight) => {
-        ctx.font = `${weight} ${size}px ${BANNER_FONTS[bannerFontKey]}`;
+        ctx.font = `${weight} ${size}px ${APP_FONT}`;
         while (ctx.measureText(str).width > maxTextWidth && size > 24) {
           size -= 2;
-          ctx.font = `${weight} ${size}px ${BANNER_FONTS[bannerFontKey]}`;
+          ctx.font = `${weight} ${size}px ${APP_FONT}`;
         }
       };
       bannerCenters.forEach((cx) => {
@@ -1263,8 +1130,7 @@
     });
 
     Promise.all([
-      document.fonts.load("40px KotraHope"),
-      document.fonts.load("bold 40px KotraHope"),
+      document.fonts.load("40px Cafe24Supermagic"),
       document.fonts.load("bold 40px Cafe24Supermagic")
     ]).catch(() => {}).then(() => document.fonts.ready).then(() => {
       drawPhotoStrip();
