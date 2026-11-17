@@ -423,9 +423,8 @@
       canvasHeight: 1800,
       photoWidth: 485,
       photoHeight: 655,
-      marginLeft: 95,
+      marginLeft: 57.5,  // 세로 반 컷 시 각 반쪽(600px)에서 좌우 여백 동일: (600-485)/2
       marginTop: 90,
-      gapX: 40,
       gapY: 40,
       cutCount: 2,       // 촬영 횟수 (2번 찍어서 윗줄/아랫줄에 같은 사진 배치)
       countdownSec: 5
@@ -1097,7 +1096,7 @@
       compositePencilLayer();
 
       // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
-      const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
+      const col2X = CONFIG.canvasWidth / 2 + CONFIG.marginLeft;
       const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
       const positions = [
         { x: CONFIG.marginLeft, y: CONFIG.marginTop },
