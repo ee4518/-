@@ -41,14 +41,16 @@
       letter-spacing: 0.5px;
     }
 
-    /* 상단 패널 (밝기 조절만 깔끔하게 유지) */
+    /* 상단 패널 (밝기 + 색감) */
     .top-panel {
       display: flex;
       justify-content: center;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 8px 22px;
       margin-bottom: 12px;
       background: #282838;
-      padding: 8px 24px;
+      padding: 10px 24px;
       border-radius: 40px;
       box-shadow: 0 4px 16px rgba(0,0,0,0.4);
     }
@@ -67,6 +69,8 @@
     .chip-group {
       display: flex;
       gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .chip-btn {
@@ -89,6 +93,14 @@
     .theme-festival { background: #fff3bf; color: #e67700; }
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
     .theme-animals  { background: #f3d9fa; color: #862e9c; }
+    .theme-school   { background: #fff0d9; color: #b25000; }
+    .theme-winter   { background: #e7f5ff; color: #1864ab; }
+
+    /* 색감 선택 버튼 */
+    .chip-btn.tone-soft    { background: #fff0f6; color: #d6336c; }
+    .chip-btn.tone-film    { background: #fff4e6; color: #a15c00; }
+    .chip-btn.tone-mono    { background: #f1f3f5; color: #343a40; }
+    .chip-btn.tone-natural { background: #e7f5ff; color: #1971c2; }
 
     input[type=range] {
       width: 100px;
@@ -330,19 +342,28 @@
 
   <header>★ 고척초등학교 기버데이 포토부스 ★</header>
 
-  <!-- 4번 요구사항: '뽀샤시' 대신 '밝기' 단독 배치 (촬영 전 버튼 최소화) -->
+  <!-- 상단 패널: 밝기 + 색감 선택 -->
   <div class="top-panel">
     <div class="option-group">
       <span>☀️ 밝기:</span>
       <input type="range" id="brightnessRange" min="100" max="150" value="118">
       <span id="brightnessVal">118%</span>
     </div>
+    <div class="option-group">
+      <span>🎨 색감:</span>
+      <div class="chip-group" id="toneChips">
+        <button class="chip-btn tone-soft" data-tone="soft">뽀송</button>
+        <button class="chip-btn tone-film" data-tone="film">필름</button>
+        <button class="chip-btn tone-mono" data-tone="mono">흑백</button>
+        <button class="chip-btn tone-natural active" data-tone="natural">자연</button>
+      </div>
+    </div>
   </div>
 
   <div class="booth-container">
     <video id="webcam" autoplay playsinline></video>
     <div class="overlay">
-      <div id="cutBadge" class="cut-badge">CUT 1 / 4</div>
+      <div id="cutBadge" class="cut-badge">CUT 1 / 2</div>
       <div id="countdown" class="countdown-text">5</div>
     </div>
     <div id="flash" class="flash-screen"></div>
@@ -365,6 +386,8 @@
           <button class="chip-btn theme-festival" data-theme="festival">🎉 손그림 축제</button>
           <button class="chip-btn theme-heart" data-theme="heart">💖 몽글 하트</button>
           <button class="chip-btn theme-animals" data-theme="animals">🐾 동물 친구</button>
+          <button class="chip-btn theme-school" data-theme="school">🎁 기버데이</button>
+          <button class="chip-btn theme-winter" data-theme="winter">❄️ 겨울</button>
         </div>
       </div>
 
@@ -401,6 +424,7 @@
       marginTop: 90,
       gapX: 40,
       gapY: 40,
+      cutCount: 2,       // 촬영 횟수 (2번 찍어서 윗줄/아랫줄에 같은 사진 배치)
       countdownSec: 5
     };
 
@@ -409,6 +433,29 @@
 
     let currentTheme = 'ribbon';
     let brightnessMultiplier = 1.18;
+    let currentTone = 'natural';
+
+    // 색감 프리셋 (행사 중 버튼으로 바로 바꿀 수 있음)
+    const TONES = {
+      soft:    'saturate(1.08) brightness(1.05) contrast(1.02)',
+      film:    'sepia(0.28) saturate(0.92) contrast(1.06) brightness(1.04)',
+      mono:    'grayscale(1) contrast(1.08) brightness(1.03)',
+      natural: ''
+    };
+
+    function photoFilter() {
+      return `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05) ${TONES[currentTone] || ''}`.trim();
+    }
+
+    // 학교 로고
+    // 1) LOGO_DATA_URL 에 base64 문자열이 있으면 그것을 사용 (파일 하나로 배포 가능, 인쇄/저장 안전)
+    // 2) 비어 있으면 같은 폴더의 logo.png 를 읽음
+    const LOGO_DATA_URL = '';
+    const schoolLogo = new Image();
+    let logoLoaded = false;
+    schoolLogo.onload = () => { logoLoaded = true; drawPhotoStrip(); };
+    schoolLogo.onerror = () => { logoLoaded = false; };
+    schoolLogo.src = LOGO_DATA_URL || 'logo.png';
 
     const video = document.getElementById('webcam');
     const btnStart = document.getElementById('btnStart');
@@ -430,12 +477,24 @@
 
     // 밝기 조절 이벤트
     function updateVideoFilter() {
-      video.style.filter = `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05)`;
+      video.style.filter = photoFilter();
     }
     brightnessRange.addEventListener('input', (e) => {
       const val = e.target.value;
       brightnessMultiplier = val / 100;
       brightnessVal.innerText = `${val}%`;
+      updateVideoFilter();
+      drawPhotoStrip();
+    });
+
+    // 색감 선택 이벤트
+    document.getElementById('toneChips').addEventListener('click', (e) => {
+      const btn = e.target.closest('.chip-btn');
+      if (!btn) return;
+      currentTone = btn.dataset.tone;
+      document.querySelectorAll('#toneChips .chip-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.tone === currentTone);
+      });
       updateVideoFilter();
       drawPhotoStrip();
     });
@@ -492,8 +551,8 @@
       capturedFrames = [];
       cutBadge.style.display = 'block';
 
-      for (let cut = 1; cut <= 4; cut++) {
-        cutBadge.innerText = `CUT ${cut} / 4`;
+      for (let cut = 1; cut <= CONFIG.cutCount; cut++) {
+        cutBadge.innerText = `CUT ${cut} / ${CONFIG.cutCount}`;
         
         for (let sec = CONFIG.countdownSec; sec > 0; sec--) {
           countdownEl.innerText = sec;
@@ -681,6 +740,30 @@
         ctx.quadraticCurveTo(0, 0, -20, 0);
         ctx.quadraticCurveTo(0, 0, 0, -20);
         ctx.fill();
+
+      } else if (type === 'gift') {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.beginPath();
+        ctx.rect(-16, -4, 32, 24);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.rect(-20, -12, 40, 9);
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, -12); ctx.lineTo(0, 20);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-8, -16, 6, -0.2, Math.PI * 1.2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(8, -16, 6, Math.PI * 1.8, Math.PI * 3.2);
+        ctx.stroke();
       }
       ctx.restore();
     }
@@ -731,6 +814,48 @@
         }
         ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI*2); ctx.fillStyle = "#ffc048"; ctx.fill(); ctx.stroke();
       }
+      ctx.restore();
+    }
+
+    function drawDoodleSnow(ctx, x, y, size = 22, angle = 0, color = "#9ec9f0") {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = "round";
+
+      for (let i = 0; i < 6; i++) {
+        const a = (i * 60) * Math.PI / 180;
+        const ex = Math.cos(a) * size;
+        const ey = Math.sin(a) * size;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(ex, ey);
+        ctx.stroke();
+
+        // 가지 두 개
+        const bx = Math.cos(a) * size * 0.62;
+        const by = Math.sin(a) * size * 0.62;
+        const branch = size * 0.32;
+        ctx.beginPath();
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + Math.cos(a + 0.7) * branch, by + Math.sin(a + 0.7) * branch);
+        ctx.moveTo(bx, by);
+        ctx.lineTo(bx + Math.cos(a - 0.7) * branch, by + Math.sin(a - 0.7) * branch);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    // 학교 로고 그리기 (로고 파일이 없으면 아무것도 그리지 않음)
+    function drawSchoolLogo(ctx) {
+      if (!logoLoaded) return;
+      const size = 66;
+      const x = (CONFIG.canvasWidth - size) / 2;
+      const y = 1486;
+      ctx.save();
+      ctx.drawImage(schoolLogo, x, y, size, size);
       ctx.restore();
     }
 
@@ -809,9 +934,47 @@
             aIdx++;
           });
         });
+
+      } else if (currentTheme === 'school') {
+        ctx.fillStyle = "#fffdf6";
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
+        const schoolColors = ['#e8a33d', '#e57373', '#4dabf7', '#69db7c', '#b197fc'];
+        let sIdx = 0;
+
+        yPositions.forEach((y, rowIdx) => {
+          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
+          cols.forEach((x) => {
+            const rot = ((x * 3 + y * 5) % 30) - 15;
+            const isGift = sIdx % 3 !== 1;
+            if (isGift) {
+              drawDoodlePartyItem(ctx, x, y, 'gift', schoolColors[sIdx % schoolColors.length], rot);
+            } else {
+              drawDoodlePartyItem(ctx, x, y, 'star', schoolColors[sIdx % schoolColors.length], rot);
+            }
+            sIdx++;
+          });
+        });
+
+      } else if (currentTheme === 'winter') {
+        ctx.fillStyle = "#f7fbff";
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
+        const snowColors = ['#9ec9f0', '#b8d8f5', '#8bb8e8'];
+        let wIdx = 0;
+
+        yPositions.forEach((y, rowIdx) => {
+          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
+          cols.forEach((x) => {
+            const size = 16 + ((x + y) % 14);
+            const rot = ((x * 2 + y * 3) % 40) - 20;
+            drawDoodleSnow(ctx, x, y, size, rot, snowColors[wIdx % snowColors.length]);
+            wIdx++;
+          });
+        });
       }
 
-      // 사각형 4컷 사진 렌더링
+      // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
       const col2X = CONFIG.marginLeft + CONFIG.photoWidth + CONFIG.gapX;
       const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
       const positions = [
@@ -821,7 +984,10 @@
         { x: col2X,             y: row2Y }
       ];
 
-      const hasRealPhotos = capturedFrames.length === 4;
+      const hasRealPhotos = capturedFrames.length === CONFIG.cutCount;
+
+      // 윗줄 A·A / 아랫줄 B·B (가운데를 세로로 자르면 두 명이 같은 2컷을 나눠 가짐)
+      const photoMap = [0, 0, 1, 1];
 
       positions.forEach((pos, index) => {
         ctx.save();
@@ -840,15 +1006,15 @@
         ctx.clip();
 
         if (hasRealPhotos) {
-          ctx.filter = `brightness(${brightnessMultiplier}) contrast(1.06) saturate(1.05)`;
-          ctx.drawImage(capturedFrames[index], pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.filter = photoFilter();
+          ctx.drawImage(capturedFrames[photoMap[index]], pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
         } else {
           ctx.fillStyle = "#f6f8fb";
           ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
           ctx.fillStyle = "#94a3b8";
           ctx.font = `34px ${APP_FONT}`;
           ctx.textAlign = "center";
-          ctx.fillText(`사진 ${index + 1} 들어가는 곳`, pos.x + CONFIG.photoWidth / 2, pos.y + CONFIG.photoHeight / 2);
+          ctx.fillText(`사진 ${photoMap[index] + 1} 들어가는 곳`, pos.x + CONFIG.photoWidth / 2, pos.y + CONFIG.photoHeight / 2);
         }
         ctx.restore();
 
@@ -875,22 +1041,52 @@
       } else if (currentTheme === 'animals') {
         mainTextColor = "#5c3d2e";
         subTextColor  = "#8b5e3c";
+      } else if (currentTheme === 'school') {
+        mainTextColor = "#b25000";
+        subTextColor  = "#e8a33d";
+      } else if (currentTheme === 'winter') {
+        mainTextColor = "#1864ab";
+        subTextColor  = "#4dabf7";
       }
 
       // ★ 1번 요구사항: 흰색 외곽선(strokeText) 완전히 빼고 깔끔하게 렌더링
-      // 윗줄: 74px 대형 폰트
-      ctx.font = `bold 74px ${APP_FONT}`;
+      // 윗줄: 74px 대형 폰트 (캔버스를 넘치면 자동으로 줄어듦)
+      const mainText = "♥2026 고척초등학교 기버데이♥";
+      let mainSize = 74;
+      const maxTextWidth = CONFIG.canvasWidth - 120;
+      ctx.font = `bold ${mainSize}px ${APP_FONT}`;
+      while (ctx.measureText(mainText).width > maxTextWidth && mainSize > 40) {
+        mainSize -= 2;
+        ctx.font = `bold ${mainSize}px ${APP_FONT}`;
+      }
       ctx.fillStyle = mainTextColor;
-      ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 26);
+      ctx.fillText(mainText, CONFIG.canvasWidth / 2, bannerCenterY - 26);
 
       // 아랫줄: 54px 대형 폰트
       ctx.font = `bold 54px ${APP_FONT}`;
       ctx.fillStyle = subTextColor;
       ctx.fillText("2026.11.19", CONFIG.canvasWidth / 2, bannerCenterY + 54);
+
+      // 학교 로고 (logo.png 가 있으면 하단 문구 위에 자동 삽입)
+      drawSchoolLogo(ctx);
+
+      ctx.filter = "none";
     }
 
     function wait(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // 캔버스 → PNG 이미지
+    // (로고 이미지 때문에 브라우저가 캔버스를 막는 경우, 로고를 빼고 한 번 더 시도해서 인쇄/저장이 끊기지 않게 함)
+    function canvasToPNG(target) {
+      try {
+        return target.toDataURL('image/png');
+      } catch (err) {
+        logoLoaded = false;
+        drawPhotoStrip();
+        return target.toDataURL('image/png');
+      }
     }
 
     btnStart.addEventListener('click', startCaptureSequence);
@@ -902,7 +1098,7 @@
     });
 
     document.getElementById('btnPrint').addEventListener('click', () => {
-      printTarget.src = canvas.toDataURL('image/png');
+      printTarget.src = canvasToPNG(canvas);
       modal.style.display = 'none';
       loadingModal.style.display = 'flex';
 
@@ -925,7 +1121,7 @@
     document.getElementById('btnDownload').addEventListener('click', () => {
       const link = document.createElement('a');
       link.download = `고척초_기버데이_${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvasToPNG(canvas);
       link.click();
     });
 
