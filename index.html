@@ -942,6 +942,160 @@
     // ==========================================
     // 캔버스 렌더링
     // ==========================================
+    // ==========================================
+    // 하단 장면(구름·언덕 + 큼직한 캐릭터)
+    // ==========================================
+    const SCENES = {
+      frame:    { paper: "#fffef9", sky: "#d3e8f7", back: "#fbeccb", front: "#c9dfee", line: "#4a5568", spark: "#f4b942" },
+      ribbon:   { paper: "#ffffff", sky: "#cfe4f8", back: "#ffffff", front: "#bcd8f2", line: "#5b86b8", spark: "#95c2eb" },
+      festival: { paper: "#fffef7", sky: "#ffe9b8", back: "#fff6d9", front: "#ffd8a8", line: "#c2571a", spark: "#ff7675" },
+      heart:    { paper: "#fff9fb", sky: "#ffd6e2", back: "#fff0f4", front: "#ffc2d4", line: "#c2255c", spark: "#ff7597" },
+      animals:  { paper: "#fcfaf7", sky: "#e6efd2", back: "#f6efdf", front: "#cfe3a8", line: "#6b4a2e", spark: "#ffc048" },
+      school:   { paper: "#fffdf6", sky: "#ffe7c2", back: "#fff4de", front: "#ffd69a", line: "#9c5a12", spark: "#e8a33d" },
+      winter:   { paper: "#f7fbff", sky: "#d4e8fa", back: "#ffffff", front: "#e4f0fb", line: "#4a77a8", spark: "#8bb8e8" }
+    };
+
+    // 폭 300px 주기로 반복되는 뭉게구름 띠 (가운데로 반 잘라도 양쪽이 똑같음)
+    function cloudBank(c, top, radii, fill, line, lw) {
+      const W = CONFIG.canvasWidth, H = CONFIG.canvasHeight;
+      const step = 300 / radii.length;
+      const circles = [];
+      for (let i = 0, x = -step; x < W + step; i++, x += step) {
+        const r = radii[((i % radii.length) + radii.length) % radii.length];
+        circles.push([x + step / 2, top + r, r]);
+      }
+      c.save();
+      c.strokeStyle = line; c.lineWidth = lw * 2; c.lineJoin = "round";
+      circles.forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.stroke(); });
+      c.fillStyle = fill;
+      circles.forEach(([x, y, r]) => { c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill(); });
+      c.fillRect(0, top + Math.max(...radii), W, H);
+      c.restore();
+    }
+
+    function drawSparkle(c, x, y, r, color) {
+      c.save();
+      c.translate(x, y);
+      c.fillStyle = color;
+      c.beginPath();
+      c.moveTo(0, -r);
+      c.quadraticCurveTo(0, 0, r, 0);
+      c.quadraticCurveTo(0, 0, 0, r);
+      c.quadraticCurveTo(0, 0, -r, 0);
+      c.quadraticCurveTo(0, 0, 0, -r);
+      c.fill();
+      c.restore();
+    }
+
+    // 동글동글 유령 (x,y = 몸통 중심)
+    function drawDoodleGhost(c, x, y, s, line) {
+      c.save();
+      c.translate(x, y);
+      c.scale(s, s);
+      c.strokeStyle = line; c.lineWidth = 3.4 / Math.sqrt(s); c.lineJoin = "round"; c.lineCap = "round";
+      c.fillStyle = "#ffffff";
+      c.beginPath();
+      c.moveTo(-34, 38);
+      c.lineTo(-34, -14);
+      c.arc(0, -14, 34, Math.PI, 0);
+      c.lineTo(34, 38);
+      c.quadraticCurveTo(28, 56, 17, 40);
+      c.quadraticCurveTo(8, 56, 0, 40);
+      c.quadraticCurveTo(-8, 56, -17, 40);
+      c.quadraticCurveTo(-28, 56, -34, 38);
+      c.closePath();
+      c.fill(); c.stroke();
+      c.fillStyle = line;
+      c.beginPath(); c.arc(-11, -12, 3.2, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(11, -12, 3.2, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "rgba(255,140,160,0.55)";
+      c.beginPath(); c.ellipse(-19, -4, 5, 3.2, 0, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(19, -4, 5, 3.2, 0, 0, Math.PI * 2); c.fill();
+      c.restore();
+    }
+
+    // 눈사람
+    function drawDoodleSnowman(c, x, y, s, line) {
+      c.save();
+      c.translate(x, y);
+      c.scale(s, s);
+      c.strokeStyle = line; c.lineWidth = 3.4 / Math.sqrt(s); c.lineJoin = "round"; c.lineCap = "round";
+      c.fillStyle = "#ffffff";
+      c.beginPath(); c.arc(0, 22, 30, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.beginPath(); c.arc(0, -20, 22, 0, Math.PI * 2); c.fill(); c.stroke();
+      c.fillStyle = line;
+      c.beginPath(); c.arc(-8, -24, 2.8, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(8, -24, 2.8, 0, Math.PI * 2); c.fill();
+      c.fillStyle = "#ff922b";
+      c.beginPath(); c.moveTo(0, -18); c.lineTo(14, -14); c.lineTo(0, -11); c.closePath(); c.fill();
+      c.fillStyle = line;
+      [8, 22, 36].forEach(yy => { c.beginPath(); c.arc(0, yy, 2.6, 0, Math.PI * 2); c.fill(); });
+      c.restore();
+    }
+
+    // 큼직하게 키운 기존 낙서 그림 (center 기준)
+    function bigDoodle(c, x, y, s, fn) {
+      c.save(); c.translate(x, y); c.scale(s, s); fn(c); c.restore();
+    }
+
+    // 사진 아래 하단 장면. 가운데 세로 컷 기준 양쪽 반쪽에 똑같이 그림
+    function drawBottomScene(c, theme) {
+      const sc = SCENES[theme] || SCENES.frame;
+
+      // 반짝이
+      [0, 600].forEach(ox => {
+        [[38, 1492, 13], [562, 1478, 16], [190, 1504, 8], [410, 1498, 9]].forEach(([x, y, r]) =>
+          drawSparkle(c, ox + x, y, r, sc.spark));
+      });
+
+      // 뒤쪽 구름(글씨 뒤 배경) → 캐릭터 → 앞쪽 구름 순서
+      cloudBank(c, 1520, [44, 38, 50, 40], sc.back, sc.line, 3.5);
+
+      const baseY = 1735;     // 캐릭터 발 위치(앞 구름에 살짝 가려짐)
+      const L = 90, R = 510;  // 반쪽(600px) 안에서 캐릭터 가로 위치
+      [0, 600].forEach(ox => {
+        const xl = ox + L, xr = ox + R;
+        if (theme === 'frame') {
+          drawDoodleGhost(c, xl, baseY - 62, 1.4, sc.line);
+          drawDoodleGhost(c, xr, baseY - 62, 1.4, sc.line);
+          drawSparkle(c, xl + 52, baseY - 150, 12, sc.spark);
+          drawSparkle(c, xr - 52, baseY - 140, 12, sc.spark);
+        } else if (theme === 'ribbon') {
+          drawDoodleGhost(c, xl, baseY - 62, 1.4, sc.line);
+          drawDoodleGhost(c, xr, baseY - 62, 1.4, sc.line);
+          drawDoodleRibbon(c, xl, baseY - 128, 1.05, -8, "#7fb2e6");
+          drawDoodleRibbon(c, xr, baseY - 128, 1.05, 8, "#7fb2e6");
+        } else if (theme === 'festival') {
+          bigDoodle(c, xl, baseY - 60, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'hat', '#ff7675', -8));
+          bigDoodle(c, xr, baseY - 72, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'balloon', '#74b9ff', 6));
+          drawSparkle(c, xl + 62, baseY - 128, 14, '#a29bfe');
+          drawSparkle(c, xr - 62, baseY - 120, 14, '#55efc4');
+        } else if (theme === 'heart') {
+          drawDoodleHeart(c, xl, baseY - 20, 88, -10, '#ff7597');
+          drawDoodleHeart(c, xr, baseY - 20, 76, 10, '#ff5c8a');
+          drawDoodleHeart(c, xl + 66, baseY - 130, 36, 14, '#ffa2b8');
+          drawDoodleHeart(c, xr - 62, baseY - 118, 32, -14, '#ff8fab');
+        } else if (theme === 'animals') {
+          bigDoodle(c, xl, baseY - 64, 2.3, k => drawDoodleAnimal(k, 0, 0, 'bear', 0));
+          bigDoodle(c, xr, baseY - 72, 2.3, k => drawDoodleAnimal(k, 0, 0, 'bunny', 0));
+          drawDoodleAnimal(c, xl + 68, baseY - 120, 'flower', 0);
+          drawDoodleAnimal(c, xr - 66, baseY - 112, 'flower', 0);
+        } else if (theme === 'school') {
+          bigDoodle(c, xl, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#e57373', -6));
+          bigDoodle(c, xr, baseY - 64, 2.8, k => drawDoodlePartyItem(k, 0, 0, 'gift', '#4dabf7', 6));
+          drawSparkle(c, xl + 62, baseY - 130, 15, '#e8a33d');
+          drawSparkle(c, xr - 62, baseY - 126, 15, '#b197fc');
+        } else if (theme === 'winter') {
+          drawDoodleSnowman(c, xl, baseY - 62, 1.4, sc.line);
+          drawDoodleSnowman(c, xr, baseY - 62, 1.4, sc.line);
+          drawDoodleSnow(c, xl + 58, baseY - 140, 20, 10, '#8bb8e8');
+          drawDoodleSnow(c, xr - 58, baseY - 134, 20, -10, '#8bb8e8');
+        }
+      });
+
+      cloudBank(c, 1738, [34, 30, 38, 32], sc.front, sc.line, 3.5);
+    }
+
     function drawPhotoStrip() {
       ctx.filter = "none";
 
@@ -951,40 +1105,20 @@
       bgCtx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
       {
         const ctx = bgCtx; // 이 블록 안의 그림은 모두 레이어로 그려짐
-      // 그림은 사진 아래 하단 띠(y≈1768)에만 한 줄로 배치. 그 위쪽 영역은 비워 둠.
-      const bandY = 1768;
-      // 세로 반 컷 시 그림이 잘리지 않도록 중앙선(600)을 피해 양쪽 반쪽에 똑같이 배치
-      const bandXs = [70, 185, 300, 415, 530, 670, 785, 900, 1015, 1130];
-      const bandRot = (i) => ((i * 37) % 24) - 12;
-      const papers = { frame: "#fffef9", ribbon: "#ffffff", festival: "#fffef7", heart: "#fff9fb",
-                       animals: "#fcfaf7", school: "#fffdf6", winter: "#f7fbff" };
-      paper = papers[currentTheme] || "#ffffff";
-
-      if (currentTheme === 'frame') {
-        const rnd = seededRandom(7);
-        pencilLine(ctx, 40, bandY, CONFIG.canvasWidth - 40, bandY, "#74c0fc", 5, rnd);
-      } else if (currentTheme === 'ribbon') {
-        bandXs.forEach((x, i) => drawDoodleRibbon(ctx, x, bandY, 0.4, bandRot(i), "#95c2eb"));
-      } else if (currentTheme === 'festival') {
-        const items = ['hat', 'balloon', 'star'];
-        const colors = ['#ff7675', '#fdcb6e', '#74b9ff', '#55efc4', '#a29bfe'];
-        bandXs.forEach((x, i) => drawDoodlePartyItem(ctx, x, bandY, items[i % 3], colors[i % 5], bandRot(i)));
-      } else if (currentTheme === 'heart') {
-        const heartColors = ['#ff7597', '#ff8fab', '#ffa2b8', '#ff5c8a'];
-        bandXs.forEach((x, i) => drawDoodleHeart(ctx, x, bandY, 26, bandRot(i), heartColors[i % 4]));
-      } else if (currentTheme === 'animals') {
-        const animals = ['bear', 'bunny', 'flower'];
-        bandXs.forEach((x, i) => drawDoodleAnimal(ctx, x, bandY, animals[i % 3], bandRot(i)));
-      } else if (currentTheme === 'school') {
-        const schoolColors = ['#e8a33d', '#e57373', '#4dabf7', '#69db7c', '#b197fc'];
-        bandXs.forEach((x, i) => drawDoodlePartyItem(ctx, x, bandY, i % 3 !== 1 ? 'gift' : 'star', schoolColors[i % 5], bandRot(i)));
-      } else if (currentTheme === 'winter') {
-        const snowColors = ['#9ec9f0', '#b8d8f5', '#8bb8e8'];
-        bandXs.forEach((x, i) => drawDoodleSnow(ctx, x, bandY, 18, bandRot(i), snowColors[i % 3]));
-      }
+      // 그림은 사진 아래 하단 장면에만 그림 (구름 위에 캐릭터)
+      paper = (SCENES[currentTheme] || SCENES.frame).paper;
+      drawBottomScene(ctx, currentTheme);
       }
       ctx.fillStyle = paper;
       ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+      {
+        // 하단으로 갈수록 하늘색(테마색)으로 번지는 배경
+        const g = ctx.createLinearGradient(0, 1250, 0, CONFIG.canvasHeight);
+        g.addColorStop(0, paper);
+        g.addColorStop(1, (SCENES[currentTheme] || SCENES.frame).sky);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 1250, CONFIG.canvasWidth, CONFIG.canvasHeight - 1250);
+      }
       compositePencilLayer();
 
       // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
@@ -1065,7 +1199,7 @@
 
       // 사진을 가운데로 잘라 두 명이 나눠 가져도 되도록, 왼쪽·오른쪽 사진 아래에 똑같은 문구를 넣음
       const bannerCenters = [CONFIG.marginLeft + CONFIG.photoWidth / 2, col2X + CONFIG.photoWidth / 2];
-      const maxTextWidth = CONFIG.photoWidth - 20;
+      const maxTextWidth = 330;
       const fitText = (str, size, weight) => {
         ctx.font = `${weight} ${size}px ${APP_FONT}`;
         while (ctx.measureText(str).width > maxTextWidth && size > 24) {
@@ -1075,14 +1209,14 @@
       };
       bannerCenters.forEach((cx) => {
         ctx.fillStyle = mainTextColor;
-        fitText("♥ 고척초등학교 ♥", 54, "bold");
-        ctx.fillText("♥ 고척초등학교 ♥", cx, 1590);
-        fitText("기버데이", 70, "bold");
-        ctx.fillText("기버데이", cx, 1664);
+        fitText("♥ 고척초등학교 ♥", 44, "bold");
+        ctx.fillText("♥ 고척초등학교 ♥", cx, 1588);
+        fitText("기버데이", 60, "bold");
+        ctx.fillText("기버데이", cx, 1654);
 
         ctx.fillStyle = subTextColor;
-        fitText("11월 19일", 46, "bold");
-        ctx.fillText("11월 19일", cx, 1722);
+        fitText("11월 19일", 38, "bold");
+        ctx.fillText("11월 19일", cx, 1706);
 
         // 학교 로고 (logo.png 가 있으면 문구 위에 자동 삽입)
         drawSchoolLogo(ctx, cx);
