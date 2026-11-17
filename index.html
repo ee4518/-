@@ -6,7 +6,7 @@
   <title>고척초등학교 기버데이 인생네컷</title>
   
   <style>
-    /* 코트라 희망체 웹폰트 */
+    /* 코트라 희망체 단독 로드 (설치 불필요 웹폰트) */
     @font-face {
       font-family: 'KotraHope';
       src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2110@1.0/KOTRAHOPE.woff2') format('woff2');
@@ -41,6 +41,7 @@
       letter-spacing: 0.5px;
     }
 
+    /* 상단 패널 (밝기 조절만 깔끔하게 유지) */
     .top-panel {
       display: flex;
       justify-content: center;
@@ -87,7 +88,7 @@
     .theme-ribbon   { background: #e3f2fd; color: #1971c2; }
     .theme-festival { background: #fff3bf; color: #e67700; }
     .theme-heart    { background: #ffe3ec; color: #d6336c; }
-    .theme-animals  { background: #f1f3f5; color: #212529; border: 1px solid #ced4da; }
+    .theme-animals  { background: #f3d9fa; color: #862e9c; }
 
     input[type=range] {
       width: 100px;
@@ -95,6 +96,7 @@
       cursor: pointer;
     }
 
+    /* 세로형 뷰어 부스 */
     .booth-container {
       position: relative;
       width: 440px;
@@ -205,6 +207,7 @@
     }
     .btn-sub:hover { background: #64748b; }
 
+    /* 결과 & 배경 미리보기 모달 */
     .modal {
       position: fixed;
       top: 0;
@@ -259,6 +262,7 @@
     .btn-close { background: #e11d48; }
     .btn-close:hover { background: #be123c; }
 
+    /* 인쇄 대기 팝업 */
     .loading-modal {
       position: fixed;
       top: 0;
@@ -326,6 +330,7 @@
 
   <header>★ 고척초등학교 기버데이 포토부스 ★</header>
 
+  <!-- 4번 요구사항: '뽀샤시' 대신 '밝기' 단독 배치 (촬영 전 버튼 최소화) -->
   <div class="top-panel">
     <div class="option-group">
       <span>☀️ 밝기:</span>
@@ -343,14 +348,16 @@
     <div id="flash" class="flash-screen"></div>
   </div>
 
+  <!-- 2번 요구사항: [배경 미리보기] 버튼 -->
   <div class="controls">
     <button id="btnStart" class="btn-main">📸 촬영 시작 (Space)</button>
     <button id="btnPreview" class="btn-sub">🔍 배경 미리보기</button>
   </div>
 
-  <!-- 결과 & 배경 선택 모달 -->
+  <!-- 결과 & 배경 선택/미리보기 모달 -->
   <div id="resultModal" class="modal">
     <div class="modal-content">
+      <!-- 팝업 내부에서 원하는 배경을 클릭해 전환 -->
       <div class="option-group" style="margin-bottom: 2px;">
         <span style="font-size: 16px;">🎨 배경 선택:</span>
         <div class="chip-group" id="modalThemeChips">
@@ -397,9 +404,10 @@
       countdownSec: 5
     };
 
+    // 3번 요구사항: 코트라 희망체 단독 적용
     const APP_FONT = "'KotraHope', sans-serif";
 
-    let currentTheme = 'animals'; // 기본 테마: 리얼 손그림 고양이 낙서
+    let currentTheme = 'ribbon';
     let brightnessMultiplier = 1.18;
 
     const video = document.getElementById('webcam');
@@ -420,6 +428,7 @@
     let capturedFrames = [];
     let isRunning = false;
 
+    // 밝기 조절 이벤트
     function updateVideoFilter() {
       video.style.filter = `brightness(${brightnessMultiplier}) contrast(1.05) saturate(1.05)`;
     }
@@ -431,6 +440,7 @@
       drawPhotoStrip();
     });
 
+    // 모달창 내부 테마 변경 이벤트
     document.getElementById('modalThemeChips').addEventListener('click', (e) => {
       const btn = e.target.closest('.chip-btn');
       if (!btn) return;
@@ -443,6 +453,7 @@
       drawPhotoStrip();
     });
 
+    // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
     btnPreview.addEventListener('click', () => {
       drawPhotoStrip();
       modal.style.display = 'flex';
@@ -536,242 +547,9 @@
       }, 50);
     }
 
-    // =========================================================================
-    // ★ 1) 동물 친구: 첨부 1번 이미지 100% 모사 (얇은 검은 볼펜 + 빨강/회색 색연필)
-    // =========================================================================
-    function drawCatDoodleItem(ctx, x, y, type, rot = 0, scale = 1) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rot * Math.PI / 180);
-      ctx.scale(scale, scale);
-
-      // 삐뚤빼뚤한 검은색 볼펜 선 스타일
-      ctx.strokeStyle = "#1a1a1a";
-      ctx.lineWidth = 2.6;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.fillStyle = "#ffffff";
-
-      if (type === 'cat_tongue') {
-        // 혓바닥 낼름 고양이 (좌측 상단 첫 번째 녀석)
-        ctx.beginPath();
-        ctx.moveTo(-18, -12); ctx.lineTo(-24, -26); ctx.lineTo(-10, -20); // 왼쪽 귀
-        ctx.bezierCurveTo(-5, -22, 10, -22, 16, -18);
-        ctx.lineTo(24, -25); ctx.lineTo(19, -10); // 오른쪽 귀
-        ctx.bezierCurveTo(28, 5, 20, 22, 0, 24);
-        ctx.bezierCurveTo(-20, 22, -26, 5, -18, -12);
-        ctx.fill(); ctx.stroke();
-
-        // 눈
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.arc(-7, 0, 2.2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, 0, 2.2, 0, Math.PI*2); ctx.fill();
-        // 입 & 빨간 혓바닥
-        ctx.beginPath(); ctx.moveTo(-3, 6); ctx.quadraticCurveTo(0, 9, 3, 6); ctx.stroke();
-        ctx.beginPath(); ctx.arc(-3, 8, 4, 0, Math.PI); ctx.fillStyle = "#e03131"; ctx.fill(); ctx.stroke();
-
-      } else if (type === 'cat_cloud') {
-        // 몽실이 구름 고양이 (우측 상단 털북숭이)
-        ctx.beginPath();
-        // 털 뭉실이 테두리
-        ctx.arc(-22, -5, 8, Math.PI*0.7, Math.PI*1.6);
-        ctx.lineTo(-20, -18); ctx.lineTo(-12, -14); // 뾰족 귀
-        ctx.arc(0, -16, 9, Math.PI*1.1, Math.PI*1.9);
-        ctx.lineTo(12, -14); ctx.lineTo(20, -18);
-        ctx.arc(22, -5, 8, Math.PI*1.4, Math.PI*0.3);
-        ctx.arc(14, 12, 9, Math.PI*0.1, Math.PI*0.7);
-        ctx.arc(-14, 12, 9, Math.PI*0.3, Math.PI*0.9);
-        ctx.closePath();
-        ctx.fill(); ctx.stroke();
-
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.arc(-7, -2, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, -2, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-3, 4); ctx.quadraticCurveTo(0, 7, 3, 4); ctx.stroke();
-
-      } else if (type === 'cat_mask') {
-        // 검은 마스크/귀 얼룩 고양이 (가운데 좌측)
-        ctx.beginPath();
-        ctx.arc(0, 2, 24, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-16, -16); ctx.lineTo(-20, -28); ctx.lineTo(-7, -23); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(7, -23); ctx.lineTo(20, -28); ctx.lineTo(16, -16); ctx.stroke();
-        
-        // 머리 위 검은 얼룩 낙서
-        ctx.fillStyle = "#2b2b2b";
-        ctx.beginPath();
-        ctx.moveTo(-16, -16); ctx.lineTo(-20, -28); ctx.lineTo(-7, -23);
-        ctx.quadraticCurveTo(0, -5, 7, -23); ctx.lineTo(20, -28); ctx.lineTo(16, -16);
-        ctx.quadraticCurveTo(0, 0, -16, -16);
-        ctx.fill();
-
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.arc(-8, 5, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(8, 5, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-4, 11); ctx.quadraticCurveTo(0, 14, 4, 11); ctx.stroke();
-
-      } else if (type === 'cat_bowtie') {
-        // 리본 넥타이 고양이 (가운데 우측)
-        ctx.beginPath();
-        ctx.arc(0, -6, 22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-15, -20); ctx.lineTo(-18, -30); ctx.lineTo(-6, -26); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(6, -26); ctx.lineTo(18, -30); ctx.lineTo(15, -20); ctx.stroke();
-        // 머리 위 검은 반점
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.ellipse(4, -20, 6, 4, 0.2, 0, Math.PI*2); ctx.fill();
-        // 눈코입
-        ctx.beginPath(); ctx.arc(-7, -5, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, -5, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-4, 1); ctx.quadraticCurveTo(0, 4, 4, 1); ctx.stroke();
-
-        // 빨간 도트 나비넥타이
-        ctx.fillStyle = "#ffffff";
-        ctx.strokeStyle = "#e03131";
-        ctx.beginPath();
-        ctx.moveTo(0, 16); ctx.lineTo(-14, 9); ctx.lineTo(-14, 23); ctx.closePath();
-        ctx.moveTo(0, 16); ctx.lineTo(14, 9); ctx.lineTo(14, 23); ctx.closePath();
-        ctx.fill(); ctx.stroke();
-        ctx.fillStyle = "#e03131";
-        ctx.beginPath(); ctx.arc(0, 16, 3, 0, Math.PI*2); ctx.fill();
-
-      } else if (type === 'cat_spot') {
-        // 땡땡이 점박이 고양이
-        ctx.beginPath();
-        ctx.arc(0, 0, 21, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-14, -15); ctx.lineTo(-18, -26); ctx.lineTo(-5, -20); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(5, -20); ctx.lineTo(18, -26); ctx.lineTo(14, -15); ctx.stroke();
-        // 검은 반점
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.arc(-5, -15, 3.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(-7, 2, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, 2, 2, 0, Math.PI*2); ctx.fill();
-        // 빨간 볼터치
-        ctx.fillStyle = "#e03131";
-        ctx.beginPath(); ctx.arc(-11, 6, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(11, 6, 2, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-3, 6); ctx.quadraticCurveTo(0, 9, 3, 6); ctx.stroke();
-
-      } else if (type === 'paw') {
-        // 검은 발바닥 자국
-        ctx.fillStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.ellipse(0, 4, 7, 5.5, 0, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(-6, -3, 2.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(-1.5, -6, 2.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(4, -5, 2.5, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7.5, -1, 2.2, 0, Math.PI*2); ctx.fill();
-
-      } else if (type === 'yarn') {
-        // 빨간 털실 뭉치 + 꼬불 실
-        ctx.strokeStyle = "#e03131";
-        ctx.lineWidth = 2.4;
-        ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI*2); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-9, -6); ctx.quadraticCurveTo(0, -14, 9, -5); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-11, 2); ctx.quadraticCurveTo(0, 12, 11, 3); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-3, -11); ctx.quadraticCurveTo(12, 0, -2, 11); ctx.stroke();
-        // 늘어진 실
-        ctx.beginPath(); ctx.moveTo(9, 8); ctx.bezierCurveTo(18, 16, 24, 8, 30, 18); ctx.stroke();
-
-      } else if (type === 'cherry') {
-        // 빨간 체리 한 쌍
-        ctx.fillStyle = "#e03131";
-        ctx.beginPath(); ctx.arc(-7, 6, 6, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(7, 4, 6, 0, Math.PI*2); ctx.fill();
-        ctx.strokeStyle = "#1a1a1a";
-        ctx.beginPath(); ctx.moveTo(-7, 2); ctx.quadraticCurveTo(-2, -10, 0, -12); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(7, 0); ctx.quadraticCurveTo(2, -10, 0, -12); ctx.stroke();
-
-      } else if (type === 'fish') {
-        // 미니 물고기
-        ctx.beginPath();
-        ctx.moveTo(-12, 0); ctx.quadraticCurveTo(0, -7, 10, 0); ctx.lineTo(16, -5); ctx.lineTo(16, 5); ctx.lineTo(10, 0);
-        ctx.quadraticCurveTo(0, 7, -12, 0); ctx.closePath(); ctx.stroke();
-        ctx.beginPath(); ctx.arc(-7, -1, 1.5, 0, Math.PI*2); ctx.fillStyle = "#1a1a1a"; ctx.fill();
-
-      } else if (type === 'red_hearts') {
-        // 나란히 올라가는 빨간 꼬마 하트 3개
-        ctx.fillStyle = "#e03131";
-        [-8, 0, 8].forEach((offsetY, i) => {
-          const hSize = 5 + i * 1.5;
-          ctx.beginPath();
-          ctx.moveTo(i * 3, offsetY);
-          ctx.bezierCurveTo(i * 3 - hSize, offsetY - hSize, i * 3 - hSize, offsetY + hSize*0.7, i * 3, offsetY + hSize);
-          ctx.bezierCurveTo(i * 3 + hSize, offsetY + hSize*0.7, i * 3 + hSize, offsetY - hSize, i * 3, offsetY);
-          ctx.fill();
-        });
-
-      } else if (type === 'crown') {
-        // 빨간 손그림 꼬마 왕관
-        ctx.fillStyle = "#e03131";
-        ctx.beginPath();
-        ctx.moveTo(-11, 8); ctx.lineTo(-13, -4); ctx.lineTo(-5, 1); ctx.lineTo(0, -7); ctx.lineTo(5, 1); ctx.lineTo(13, -4); ctx.lineTo(11, 8);
-        ctx.closePath(); ctx.fill();
-
-      } else if (type === 'sparkle') {
-        // 얇은 빨강/회색 펜 낙서 별
-        ctx.strokeStyle = rot % 2 === 0 ? "#e03131" : "#868e96";
-        ctx.lineWidth = 1.8;
-        ctx.beginPath(); ctx.moveTo(0, -9); ctx.lineTo(0, 9); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(9, 0); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-6, -6); ctx.lineTo(6, 6); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(6, -6); ctx.lineTo(-6, 6); ctx.stroke();
-      }
-
-      ctx.restore();
-    }
-
-
-    // =========================================================================
-    // ★ 2) 몽글 하트: 첨부 2번 이미지 100% 모사 (사선 빗금 색연필 왁스 텍스처)
-    // =========================================================================
-    function drawPencilHatchHeart(ctx, x, y, size = 32, rot = 0) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(rot * Math.PI / 180);
-
-      // 색연필 하트 외곽 클리핑 패스 정의
-      const w = size * 0.95;
-      const h = size;
-      const heartPath = new Path2D();
-      heartPath.moveTo(0, -h * 0.15);
-      heartPath.bezierCurveTo(-w * 0.65, -h * 0.65, -w * 0.65, h * 0.25, 0, h * 0.65);
-      heartPath.bezierCurveTo(w * 0.65, h * 0.25, w * 0.65, -h * 0.65, 0, -h * 0.15);
-
-      // 하트 안쪽으로 클리핑 후 색연필 '사선 빗금' 채색 (Hatching)
-      ctx.save();
-      ctx.clip(heartPath);
-
-      // 45도 기울어진 색연필 사선 스트로크들
-      ctx.rotate(-Math.PI / 4);
-      ctx.strokeStyle = "rgba(247, 131, 172, 0.68)";
-      ctx.lineWidth = 2.2;
-      ctx.lineCap = "round";
-
-      const range = size * 1.5;
-      const step = 3.2; // 빗금 간격
-
-      for (let lx = -range; lx <= range; lx += step) {
-        // 색연필 왁스의 미세한 불규칙 질감 표현
-        ctx.beginPath();
-        const jitterA = (Math.sin(lx * 5) * 1.5);
-        const jitterB = (Math.cos(lx * 3) * 1.5);
-        ctx.strokeStyle = `rgba(240, 101, 149, ${0.45 + (Math.sin(lx)*0.25)})`;
-        ctx.moveTo(lx + jitterA, -range);
-        ctx.lineTo(lx + jitterB, range);
-        ctx.stroke();
-      }
-      ctx.restore();
-
-      // 색연필로 직접 슥슥 딴 불규칙하고 부드러운 하트 테두리
-      ctx.strokeStyle = "rgba(230, 73, 128, 0.75)";
-      ctx.lineWidth = 1.6;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.stroke(heartPath);
-
-      ctx.restore();
-    }
-
-
-    // 기존 1번 (하늘리본) 및 2번 (손그림 축제) 유지
+    // ==========================================
+    // 손그림 드로잉 함수
+    // ==========================================
     function drawDoodleRibbon(ctx, x, y, scale = 0.65, angle = 0, color = "#94c2ec") {
       ctx.save();
       ctx.translate(x, y - 5);
@@ -787,17 +565,67 @@
       ctx.bezierCurveTo(-18, -30, -52, -16, -46, 8);
       ctx.bezierCurveTo(-40, 24, -16, 13, 0, 0);
       ctx.fillStyle = "rgba(255, 255, 255, 0.45)";
-      ctx.fill(); ctx.stroke();
+      ctx.fill();
+      ctx.stroke();
 
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.bezierCurveTo(18, -30, 52, -16, 46, 8);
       ctx.bezierCurveTo(40, 24, 16, 13, 0, 0);
-      ctx.fill(); ctx.stroke();
+      ctx.fill();
+      ctx.stroke();
 
-      ctx.beginPath(); ctx.moveTo(-4, 5); ctx.bezierCurveTo(-13, 23, -22, 42, -32, 58); ctx.lineTo(-22, 48); ctx.lineTo(-16, 59); ctx.bezierCurveTo(-10, 42, -3, 23, 0, 5); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(4, 5); ctx.bezierCurveTo(13, 23, 22, 42, 32, 58); ctx.lineTo(22, 48); ctx.lineTo(16, 59); ctx.bezierCurveTo(10, 42, 3, 23, 0, 5); ctx.stroke();
-      ctx.beginPath(); ctx.arc(0, 1, 8, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(-4, 5);
+      ctx.bezierCurveTo(-13, 23, -22, 42, -32, 58);
+      ctx.lineTo(-22, 48);
+      ctx.lineTo(-16, 59);
+      ctx.bezierCurveTo(-10, 42, -3, 23, 0, 5);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(4, 5);
+      ctx.bezierCurveTo(13, 23, 22, 42, 32, 58);
+      ctx.lineTo(22, 48);
+      ctx.lineTo(16, 59);
+      ctx.bezierCurveTo(10, 42, 3, 23, 0, 5);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(0, 1, 8, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawDoodleHeart(ctx, x, y, size = 38, angle = 0, color = "#ff7597") {
+      ctx.save();
+      ctx.translate(x, y - (size * 0.45));
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.strokeStyle = color;
+      ctx.fillStyle = "rgba(255, 240, 245, 0.65)";
+      ctx.lineWidth = 4.8;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      ctx.beginPath();
+      const topCurveHeight = size * 0.32;
+      ctx.moveTo(0, topCurveHeight);
+      ctx.bezierCurveTo(0, -2, -size / 1.8, -2, -size / 1.8, topCurveHeight);
+      ctx.bezierCurveTo(-size / 1.8, (size + topCurveHeight) / 1.8, 0, (size + topCurveHeight) / 1.4, 0, size);
+      ctx.bezierCurveTo(0, (size + topCurveHeight) / 1.4, size / 1.8, (size + topCurveHeight) / 1.8, size / 1.8, topCurveHeight);
+      ctx.bezierCurveTo(size / 1.8, -2, 0, -2, 0, topCurveHeight);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(255, 117, 151, 0.5)";
+      ctx.lineWidth = 2.5;
+      ctx.arc(-size*0.2, topCurveHeight*0.8, 4, 0, Math.PI);
+      ctx.stroke();
+
       ctx.restore();
     }
 
@@ -812,24 +640,102 @@
 
       if (type === 'hat') {
         ctx.fillStyle = "rgba(255, 255, 255, 0.85)";
-        ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(-18, 18); ctx.quadraticCurveTo(0, 24, 18, 18); ctx.closePath(); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, -31, 5.5, 0, Math.PI*2); ctx.fillStyle = color; ctx.fill();
-        ctx.beginPath(); ctx.moveTo(-9, -4); ctx.lineTo(9, -1); ctx.moveTo(-13, 10); ctx.lineTo(13, 12); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(0, -28);
+        ctx.lineTo(-18, 18);
+        ctx.quadraticCurveTo(0, 24, 18, 18);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(0, -31, 5.5, 0, Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-9, -4); ctx.lineTo(9, -1);
+        ctx.moveTo(-13, 10); ctx.lineTo(13, 12);
+        ctx.stroke();
+
       } else if (type === 'balloon') {
         ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
-        ctx.beginPath(); ctx.ellipse(0, -6, 17, 22, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-3, 16); ctx.lineTo(3, 16); ctx.lineTo(0, 19); ctx.closePath(); ctx.fill();
-        ctx.beginPath(); ctx.moveTo(0, 19); ctx.bezierCurveTo(-7, 27, 7, 35, -2, 43); ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(0, -6, 17, 22, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-3, 16); ctx.lineTo(3, 16); ctx.lineTo(0, 19); ctx.closePath(); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, 19);
+        ctx.bezierCurveTo(-7, 27, 7, 35, -2, 43);
+        ctx.stroke();
+
       } else if (type === 'star') {
         ctx.fillStyle = color;
-        ctx.beginPath(); ctx.moveTo(0, -20); ctx.quadraticCurveTo(0, 0, 20, 0); ctx.quadraticCurveTo(0, 0, 0, 20); ctx.quadraticCurveTo(0, 0, -20, 0); ctx.quadraticCurveTo(0, 0, 0, -20); ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, -20);
+        ctx.quadraticCurveTo(0, 0, 20, 0);
+        ctx.quadraticCurveTo(0, 0, 0, 20);
+        ctx.quadraticCurveTo(0, 0, -20, 0);
+        ctx.quadraticCurveTo(0, 0, 0, -20);
+        ctx.fill();
       }
       ctx.restore();
     }
 
+    function drawDoodleAnimal(ctx, x, y, type, angle = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle * Math.PI / 180);
+      ctx.strokeStyle = "#7c5335";
+      ctx.lineWidth = 4.2;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.fillStyle = "#ffffff";
+
+      if (type === 'bear') {
+        ctx.beginPath(); ctx.arc(-19, -16, 9.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(19, -16, 9.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 2, 25, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#7c5335";
+        ctx.beginPath(); ctx.arc(-8, 0, 2.8, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(8, 0, 2.8, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 8, 4.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+
+        ctx.fillStyle = "#ffb3c1";
+        ctx.beginPath(); ctx.arc(-14, 8, 3.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(14, 8, 3.5, 0, Math.PI*2); ctx.fill();
+
+      } else if (type === 'bunny') {
+        ctx.beginPath(); ctx.ellipse(-9, -20, 6.5, 17, -0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(9, -20, 6.5, 17, 0.15, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 4, 22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+        ctx.fillStyle = "#7c5335";
+        ctx.beginPath(); ctx.arc(-7, 2, 2.5, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(7, 2, 2.5, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#ff85a2";
+        ctx.beginPath(); ctx.arc(0, 8, 2.8, 0, Math.PI*2); ctx.fill();
+
+      } else if (type === 'flower') {
+        ctx.fillStyle = "#ffde59";
+        for (let i = 0; i < 5; i++) {
+          const a = (i * 72) * Math.PI / 180;
+          ctx.beginPath();
+          ctx.arc(Math.cos(a)*14, Math.sin(a)*14, 7.5, 0, Math.PI*2);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill(); ctx.stroke();
+        }
+        ctx.beginPath(); ctx.arc(0, 0, 8.5, 0, Math.PI*2); ctx.fillStyle = "#ffc048"; ctx.fill(); ctx.stroke();
+      }
+      ctx.restore();
+    }
 
     // ==========================================
-    // 캔버스 메인 합성
+    // 캔버스 렌더링
     // ==========================================
     function drawPhotoStrip() {
       ctx.filter = "none";
@@ -871,45 +777,36 @@
         });
 
       } else if (currentTheme === 'heart') {
-        // ★ 몽글 하트: 순백색 종이 + 색연필 사선 빗금 하트 패턴 (첨부 2번 100% 모사)
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#fff9fb";
         ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
 
-        // 사진 2번처럼 촘촘하고 리드미컬하게 흩뿌려진 색연필 하트들
-        const heartRows = [65, 180, 290, 410, 530, 650, 770, 890, 1010, 1130, 1250, 1370, 1490, 1610, 1730];
-        const colPatternA = [65, 200, 340, 480, 600, 720, 860, 1000, 1135];
-        const colPatternB = [130, 270, 410, 540, 660, 790, 930, 1070];
-
-        heartRows.forEach((y, rIdx) => {
-          const cols = (rIdx % 2 === 0) ? colPatternA : colPatternB;
-          cols.forEach((x, cIdx) => {
-            // 자연스러운 각도(-22도 ~ +22도)와 다양한 크기(20px ~ 38px)
-            const rot = ((x * 7 + y * 13) % 44) - 22;
-            const size = 22 + ((x * y + rIdx) % 15);
-            drawPencilHatchHeart(ctx, x, y, size, rot);
-          });
-        });
-
-      } else if (currentTheme === 'animals') {
-        // ★ 동물 친구: 순백색 종이 + 검은 볼펜 고양이 낙서 & 빨간 포인트 (첨부 1번 100% 모사)
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-
-        const catDoodles = [
-          'cat_tongue', 'fish', 'cat_cloud', 'cherry',
-          'cat_mask', 'red_hearts', 'cat_bowtie', 'sparkle',
-          'paw', 'cat_spot', 'yarn', 'crown'
-        ];
-        let dIdx = 0;
+        const heartColors = ['#ff7597', '#ff8fab', '#ffa2b8', '#ff5c8a'];
+        let cIdx = 0;
 
         yPositions.forEach((y, rowIdx) => {
           const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
           cols.forEach((x) => {
-            const item = catDoodles[dIdx % catDoodles.length];
-            const rot = ((x * 3 + y * 5) % 24) - 12;
-            const sc = (item.startsWith('cat')) ? 0.95 : 1.0;
-            drawCatDoodleItem(ctx, x, y, item, rot, sc);
-            dIdx++;
+            const rot = ((x * 5 + y * 3) % 36) - 18;
+            const size = 36 + ((x * y) % 6);
+            drawDoodleHeart(ctx, x, y, size, rot, heartColors[cIdx % heartColors.length]);
+            cIdx++;
+          });
+        });
+
+      } else if (currentTheme === 'animals') {
+        ctx.fillStyle = "#fcfaf7";
+        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
+        const animals = ['bear', 'bunny', 'flower'];
+        let aIdx = 0;
+
+        yPositions.forEach((y, rowIdx) => {
+          const cols = (rowIdx % 2 === 0) ? symRowA : symRowB;
+          cols.forEach((x) => {
+            const type = animals[aIdx % animals.length];
+            const rot = ((x * 2 + y * 7) % 26) - 13;
+            drawDoodleAnimal(ctx, x, y, type, rot);
+            aIdx++;
           });
         });
       }
@@ -960,7 +857,7 @@
         ctx.strokeRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
       });
 
-      // 하단 문구 (흰색 테두리 없이 깔끔하게 렌더링)
+      // 하단 문구 렌더링
       const bannerTop = row2Y + CONFIG.photoHeight + 35;
       const bannerCenterY = bannerTop + ((CONFIG.canvasHeight - bannerTop) / 2) - 8;
 
@@ -973,15 +870,15 @@
         mainTextColor = "#d9480f";
         subTextColor  = "#f76707";
       } else if (currentTheme === 'heart') {
-        mainTextColor = "#e64980";
+        mainTextColor = "#d6336c";
         subTextColor  = "#f783ac";
       } else if (currentTheme === 'animals') {
-        // 볼펜 드로잉과 일체감을 주는 세련된 먹색 & 레드 포인트
-        mainTextColor = "#1a1a1a";
-        subTextColor  = "#e03131";
+        mainTextColor = "#5c3d2e";
+        subTextColor  = "#8b5e3c";
       }
 
-      // 윗줄: 74px 대형 폰트 (흰색 외곽선 완전 배제)
+      // ★ 1번 요구사항: 흰색 외곽선(strokeText) 완전히 빼고 깔끔하게 렌더링
+      // 윗줄: 74px 대형 폰트
       ctx.font = `bold 74px ${APP_FONT}`;
       ctx.fillStyle = mainTextColor;
       ctx.fillText("♥2026 고척초등학교 기버데이♥", CONFIG.canvasWidth / 2, bannerCenterY - 26);
