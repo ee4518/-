@@ -494,7 +494,7 @@
       school:  { cx: 1600, cy: 305, width: 330 },   // 깃발·풍선(위)과 가게·선물(아래) 사이
       space:   { cx: 1595, cy: 300, width: 330 },   // 행성(위)과 로켓·토끼(아래) 사이
       animals: { cx: 1595, cy: 318, width: 330 },   // 나뭇가지(위)와 동물들(아래) 사이
-      heart:   { cx: 1605, cy: 300, width: 250 }    // 하트 타원 안쪽 (폭이 좁음)
+      heart:   { cx: 1608, cy: 300, width: 300 }    // 하트 무늬 줄 가운데
     };
 
     // 방향별 그림 배치. 가로는 세로 프레임의 사진 크기(485×655)를 눕힌 655×485 로 쓰고,
@@ -964,7 +964,7 @@
       animals: { paper: "#fcfaf7", sky: "#e6efd2", back: "#f6efdf", front: "#cfe3a8", line: "#6b4a2e", spark: "#ffc048",
                  main: "#5c3d2e", sub: "#8b5e3c" },
       heart:   { paper: "#fff9fb", sky: "#ffd6e2", back: "#fff0f4", front: "#ffc2d4", line: "#c2255c", spark: "#ff7597",
-                 main: "#d6336c", sub: "#f783ac" }
+                 main: "#9d174d", sub: "#be185d", halo: true }
     };
 
     // 폭 300px 주기로 반복되는 뭉게구름 띠 (가운데로 반 잘라도 양쪽이 똑같음)
@@ -1226,15 +1226,27 @@
         const y1 = L.landscape ? b.cy - 40 : 1588;
         const y2 = L.landscape ? b.cy + 22 : 1654;
         const y3 = L.landscape ? b.cy + 68 : 1706;
+        // 하트 무늬 위에서도 글씨가 또렷하도록 연한 테두리(후광)를 먼저 그림 (하트 테마만)
+        const put = (str, x, y) => {
+          if (scene.halo) {
+            ctx.save();
+            ctx.lineJoin = "round";
+            ctx.lineWidth = 9;
+            ctx.strokeStyle = "rgba(255, 244, 248, 0.92)";
+            ctx.strokeText(str, x, y);
+            ctx.restore();
+          }
+          ctx.fillText(str, x, y);
+        };
         ctx.fillStyle = mainTextColor;
         fitText("고척초등학교", sz[0], "bold");
-        ctx.fillText("고척초등학교", b.cx, y1);
+        put("고척초등학교", b.cx, y1);
         fitText("♥기버데이♥", sz[1], "bold");
-        ctx.fillText("♥기버데이♥", b.cx, y2);
+        put("♥기버데이♥", b.cx, y2);
 
         ctx.fillStyle = subTextColor;
         fitText("2026.11.19", sz[2], "bold");
-        ctx.fillText("2026.11.19", b.cx, y3);
+        put("2026.11.19", b.cx, y3);
 
         // 학교 로고 (logo.png 가 있으면 세로 모드에서 문구 위에 삽입)
         if (!L.landscape) drawSchoolLogo(ctx, b.cx);
