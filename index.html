@@ -213,6 +213,7 @@
     /* 가로 모드: 촬영 화면과 미리보기가 가로 모양으로 바뀜 */
     body.landscape .booth-container { width: 600px; height: 440px; }
     body.landscape #previewCanvas {
+      aspect-ratio: 3 / 2;   /* 세로용 2/3 비율이 남아 있으면 팝업이 화면 밖으로 넘쳐서 버튼이 안 보임 */
       height: auto;
       width: clamp(300px, calc((100vh - 200px) * 1.5), 600px);
     }
