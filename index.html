@@ -310,31 +310,36 @@
 
     @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    /* 카메라 연결 안내 (연결이 안 되거나 끊겼을 때 부스 화면 위에 표시) */
-    .cam-error {
-      position: absolute; inset: 0; z-index: 5;
-      display: none; flex-direction: column; align-items: center; justify-content: center;
-      gap: 18px; padding: 24px; text-align: center;
-      background: rgba(15, 18, 24, 0.94); color: #ffffff;
-    }
-    .cam-error .cam-title { font-size: 26px; margin: 0; }
-    .cam-error .cam-msg { font-size: 19px; line-height: 1.6; margin: 0; color: #dbe4f0; }
-    .cam-error button {
-      border: none; border-radius: 25px; padding: 12px 28px; font-size: 20px;
-      background: #0284c7; color: #ffffff; cursor: pointer;
-    }
-    .cam-error button:hover { background: #0369a1; }
+    .modal-title { margin: 0; font-size: 18px; color: #f1f5f9; text-align: center; }
 
     @page { size: 4in 6in; margin: 0; }
-    @media print {
-      body * { visibility: hidden; }
-      .print-image, .print-image * { visibility: visible; }
-      .print-image {
-        position: absolute; left: 0; top: 0;
-        width: 100vw; height: 100vh; display: block !important;
-      }
+    /* 인쇄용 장수만큼의 이미지 (화면에서는 숨김) */
+    #printArea { display: none; }
+    .copies {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    .print-image { display: none; width: 100%; height: 100%; object-fit: fill; }
+    .copies-label { font-size: 16px; color: #e2e8f0; margin-right: 4px; }
+    .copies-btn { background: #ffffff; color: #334155; min-width: 52px; }
+
+    @media print {
+      /* 인쇄할 이미지(장수만큼)만 남기고 화면의 나머지는 모두 숨김 */
+      body { display: block; margin: 0; padding: 0; background: #ffffff; }
+      body > *:not(#printArea) { display: none !important; }
+      #printArea { display: block !important; }
+      .print-page {
+        display: block;
+        width: 4in;
+        height: 6in;
+        object-fit: fill;
+        break-after: page;
+        page-break-after: always;
+      }
+      .print-page:last-child { break-after: auto; page-break-after: auto; }
+    }
   </style>
 </head>
 <body>
@@ -366,11 +371,6 @@
       <div id="countdown" class="countdown-text">5</div>
     </div>
     <div id="flash" class="flash-screen"></div>
-    <div id="camError" class="cam-error" role="alert">
-      <p class="cam-title">📷 카메라를 연결하지 못했어요</p>
-      <p class="cam-msg"></p>
-      <button id="btnCamRetry" type="button">🔄 다시 연결</button>
-    </div>
   </div>
 
   <!-- 2번 요구사항: [배경 미리보기] 버튼 -->
@@ -386,6 +386,8 @@
   <!-- 결과 & 배경 선택/미리보기 모달 -->
   <div id="resultModal" class="modal">
     <div class="modal-content">
+      <!-- 사진을 찍기 전(배경만 보기)과 찍은 뒤(인쇄)에 안내 문구와 버튼이 달라짐 -->
+      <p id="modalTitle" class="modal-title"></p>
       <!-- 팝업 내부에서 원하는 배경을 클릭해 전환 -->
       <div class="option-group" style="margin-bottom: 2px;">
         <span style="font-size: 16px; color: #e2e8f0;">🎨 배경 선택:</span>
@@ -399,6 +401,16 @@
 
       <canvas id="previewCanvas" width="1200" height="1800"></canvas>
 
+      <!-- 인쇄할 장수 고르기 (종이 한 장을 반으로 잘라 두 명이 나눠 가져요) -->
+      <div class="copies" role="group" aria-label="인쇄 장수">
+        <span class="copies-label">🖨️ 인쇄 장수</span>
+        <button type="button" class="chip-btn copies-btn active" data-copies="1" aria-pressed="true">1장</button>
+        <button type="button" class="chip-btn copies-btn" data-copies="2" aria-pressed="false">2장</button>
+        <button type="button" class="chip-btn copies-btn" data-copies="3" aria-pressed="false">3장</button>
+        <button type="button" class="chip-btn copies-btn" data-copies="4" aria-pressed="false">4장</button>
+        <button type="button" class="chip-btn copies-btn" data-copies="5" aria-pressed="false">5장</button>
+      </div>
+
       <div class="modal-buttons">
         <button id="btnPrint" class="btn-modal btn-print">🖨️ 바로 인쇄</button>
         <button id="btnClose" class="btn-modal btn-close">닫기</button>
@@ -406,7 +418,7 @@
     </div>
   </div>
 
-  <img id="printTarget" class="print-image" />
+  <div id="printArea" aria-hidden="true"></div>
 
   <script>
     const CONFIG = {
@@ -459,7 +471,7 @@
     const modal = document.getElementById('resultModal');
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
-    const printTarget = document.getElementById('printTarget');
+    const printArea = document.getElementById('printArea');
     const brightnessRange = document.getElementById('brightnessRange');
     const brightnessVal = document.getElementById('brightnessVal');
 
@@ -572,11 +584,28 @@
       drawPhotoStrip();
     });
 
-    // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
-    btnPreview.addEventListener('click', () => {
+    // 찍은 사진이 있는가 (이 방향으로 찍은 사진 2장이 모두 있을 때만 true)
+    function hasPhotos() {
+      return capturedFrames.length === CONFIG.cutCount && capturedOrientation === orientation;
+    }
+
+    // 팝업 모양: 사진을 찍기 전엔 '배경 미리보기'(인쇄 버튼 없음), 찍은 뒤엔 '인쇄' 버튼과 장수 선택이 나타남
+    function updateModalMode() {
+      const has = hasPhotos();
+      document.getElementById('modalTitle').textContent = has
+        ? '📸 사진이 나왔어요! 마음에 들면 인쇄하세요'
+        : '🔍 배경 미리보기 (사진을 찍은 뒤에 인쇄할 수 있어요)';
+      document.querySelector('.copies').style.display = has ? 'flex' : 'none';
+      document.getElementById('btnPrint').style.display = has ? '' : 'none';
+    }
+    function openModal() {
       drawPhotoStrip();
+      updateModalMode();
       modal.style.display = 'flex';
-    });
+    }
+
+    // 2번 요구사항: [배경 미리보기] 클릭 시 팝업 열기
+    btnPreview.addEventListener('click', openModal);
 
     function playBeep(freq, duration) {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -591,59 +620,61 @@
       osc.stop(audioCtx.currentTime + duration);
     }
 
-    const camError = document.getElementById('camError');
-    function showCamError(msg) {
-      camError.querySelector('.cam-msg').textContent = msg;
-      camError.style.display = 'flex';
-      btnStart.disabled = true;
-    }
-    function hideCamError() {
-      camError.style.display = 'none';
-      btnStart.disabled = isRunning;
-    }
-    function camErrorMessage(err) {
-      const name = err && err.name;
-      if (name === 'NotAllowedError' || name === 'SecurityError') {
-        return '카메라 사용이 막혀 있어요. 주소창 왼쪽의 자물쇠 모양을 눌러 "카메라"를 "허용"으로 바꾼 뒤, 아래 버튼을 눌러 주세요.';
-      }
-      if (name === 'NotFoundError' || name === 'OverconstrainedError') {
-        return '카메라를 찾지 못했어요. 카메라가 컴퓨터에 꽂혀 있는지 확인한 뒤, 아래 버튼을 눌러 주세요.';
-      }
-      if (name === 'NotReadableError' || name === 'AbortError') {
-        return '다른 프로그램이 카메라를 쓰고 있어요. 다른 프로그램(화상 회의 등)을 닫고, 아래 버튼을 눌러 주세요.';
-      }
-      return '카메라 연결에 문제가 생겼어요. 선을 확인한 뒤, 아래 버튼을 눌러 다시 연결해 주세요.';
-    }
+    // 카메라가 연결되지 않아도 촬영할 수 있도록, 안 될 때는 안내 없이 까만 화면을 대신 씀
+    let blackAnimId = 0;
     function cameraIsLive() {
       const s = video.srcObject;
       return !!s && s.getVideoTracks().some(t => t.readyState === 'live');
     }
+    function stopCurrentSource() {
+      cancelAnimationFrame(blackAnimId);
+      if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+    }
+    function useBlackScreen() {
+      stopCurrentSource();
+      const c = document.createElement('canvas');
+      c.width = 1280; c.height = 720;
+      const g = c.getContext('2d');
+      const draw = () => {
+        g.fillStyle = '#000000';
+        g.fillRect(0, 0, c.width, c.height);
+        blackAnimId = requestAnimationFrame(draw);
+      };
+      draw();
+      video.srcObject = c.captureStream(30);
+      video.play().catch(() => {});
+      updateVideoFilter();
+    }
+    let usingBlack = false;
     async function initCamera() {
       try {
-        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        stopCurrentSource();
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
           audio: false
         });
         video.srcObject = stream;
+        usingBlack = false;
         updateVideoFilter();
-        hideCamError();
-        // 촬영 중간에 카메라가 빠지면 안내 화면을 보여 줌
+        // 촬영 중간에 카메라가 빠지면 까만 화면으로 바꿈
         stream.getVideoTracks().forEach(t => t.addEventListener('ended', () => {
-          showCamError('카메라 연결이 끊어졌어요. 선이 빠지지 않았는지 확인한 뒤, 아래 버튼을 눌러 주세요.');
+          usingBlack = true;
+          useBlackScreen();
         }));
       } catch (err) {
-        showCamError(camErrorMessage(err));
+        usingBlack = true;
+        useBlackScreen();
       }
     }
-    document.getElementById('btnCamRetry').addEventListener('click', initCamera);
+    // 카메라를 나중에 꽂으면 저절로 다시 연결
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener('devicechange', () => { if (usingBlack && !isRunning) initCamera(); });
+    }
 
     async function startCaptureSequence() {
       if (isRunning) return;
-      if (!cameraIsLive()) {
-        showCamError('카메라가 연결되어 있지 않아요. 선을 확인한 뒤, 아래 버튼을 눌러 주세요.');
-        return;
-      }
+      if (!cameraIsLive()) { usingBlack = true; useBlackScreen(); }
       isRunning = true;
       btnStart.disabled = true;
       lockOrientButtons(true);
@@ -669,8 +700,7 @@
       }
 
       cutBadge.style.display = 'none';
-      drawPhotoStrip();
-      modal.style.display = 'flex';
+      openModal();
       isRunning = false;
       btnStart.disabled = false;
       lockOrientButtons(false);
@@ -1122,7 +1152,7 @@
         compositePencilLayer();
       }
 
-      const hasRealPhotos = capturedFrames.length === CONFIG.cutCount && capturedOrientation === orientation;
+      const hasRealPhotos = hasPhotos();
 
       L.positions.forEach((pos, index) => {
         if (!frameImg) {
@@ -1226,9 +1256,25 @@
     // 인쇄가 끝나면(또는 인쇄 창을 닫으면) 찍은 사진을 지움
     function clearPhotos() {
       capturedFrames = [];
-      printTarget.removeAttribute('src');
+      printArea.replaceChildren();
       drawPhotoStrip();
     }
+
+    // 인쇄 장수 고르기 (기본 1장. 인쇄하고 나면 다시 1장으로 돌아감)
+    let printCopies = 1;
+    function syncCopies() {
+      document.querySelectorAll('.copies-btn').forEach(b => {
+        const on = Number(b.dataset.copies) === printCopies;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+    }
+    document.querySelector('.copies').addEventListener('click', (e) => {
+      const b = e.target.closest('.copies-btn');
+      if (!b) return;
+      printCopies = Number(b.dataset.copies);
+      syncCopies();
+    });
 
     let isPrinting = false;
     document.getElementById('btnPrint').addEventListener('click', async () => {
@@ -1247,10 +1293,23 @@
           pc.rotate(Math.PI / 2);
           pc.drawImage(canvas, 0, 0);
         }
-        printTarget.src = canvasToPNG(printSource);
-        try { await printTarget.decode(); } catch (err) { /* 준비 확인이 안 되는 브라우저는 그냥 진행 */ }
+        // 고른 장수만큼 같은 이미지를 한 장씩 한 쪽으로 만듦 (프린터가 장수만큼 인쇄)
+        const dataUrl = canvasToPNG(printSource);
+        const copies = printCopies;
+        printArea.replaceChildren();
+        const ready = [];
+        for (let i = 0; i < copies; i++) {
+          const pg = new Image();
+          pg.className = 'print-page';
+          pg.src = dataUrl;
+          printArea.append(pg);
+          ready.push(pg.decode().catch(() => { /* 준비 확인이 안 되는 브라우저는 그냥 진행 */ }));
+        }
+        await Promise.all(ready);
         // 2) 기다림 화면 없이 바로 처음 화면으로
         modal.style.display = 'none';
+        printCopies = 1;
+        syncCopies();
         // 3) 인쇄가 끝나면 사진 지움 (혹시 이벤트가 안 오면 30초 뒤에 지움)
         const failSafe = setTimeout(clearPhotos, 30000);
         window.addEventListener('afterprint', () => { clearTimeout(failSafe); clearPhotos(); }, { once: true });
