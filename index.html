@@ -248,8 +248,10 @@
     }
 
     #previewCanvas {
-      width: 320px;
-      height: 480px;
+      /* 촬영 화면(높이 600px)과 같은 크기로 보이게. 화면이 작으면 그에 맞춰 줄어듦 (2:3 비율 유지) */
+      height: clamp(280px, calc(100vh - 200px), 600px);
+      width: auto;
+      aspect-ratio: 2 / 3;
       background: white;
       border-radius: 6px;
       box-shadow: 0 8px 25px rgba(0,0,0,0.5);
