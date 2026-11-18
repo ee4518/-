@@ -313,7 +313,10 @@
     .modal-head { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .modal-title { margin: 0; font-size: 18px; color: #f1f5f9; text-align: center; }
 
-    @page { size: 4in 6in; margin: 0; }
+    /* 인쇄: 용지 크기는 프린터가 정한 대로 두고(size: auto), 사진은 항상 종이의 왼쪽 위 모서리에
+       엽서 크기(100×148mm)로 놓음. 프린터가 큰 용지(Letter/A4)로 인식해도 인화지에 사진이 딱 맞게 찍힘 */
+    :root { --print-w: 100mm; --print-h: 148mm; }
+    @page { size: auto; margin: 0; }
     /* 인쇄용 장수만큼의 이미지 (화면에서는 숨김) */
     #printArea { display: none; }
     .copies {
@@ -333,8 +336,8 @@
       #printArea { display: block !important; }
       .print-page {
         display: block;
-        width: 4in;
-        height: 6in;
+        width: var(--print-w);
+        height: var(--print-h);
         object-fit: fill;
         break-after: page;
         page-break-after: always;
