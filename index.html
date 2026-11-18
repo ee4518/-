@@ -184,6 +184,37 @@
       margin-top: 15px;
       display: flex;
       gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 세로 / 가로 고르기 (촬영 시작 버튼 옆) */
+    .orient {
+      display: flex;
+      background: #334155;
+      border-radius: 40px;
+      padding: 4px;
+      gap: 4px;
+    }
+    .orient-btn {
+      border: none;
+      background: transparent;
+      color: #cbd5e1;
+      font-size: 17px;
+      padding: 9px 18px;
+      border-radius: 36px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .orient-btn.active { background: #ffde59; color: #3b2f00; }
+    .orient-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* 가로 모드: 촬영 화면과 미리보기가 가로 모양으로 바뀜 */
+    body.landscape .booth-container { width: 600px; height: 440px; }
+    body.landscape #previewCanvas {
+      height: auto;
+      width: clamp(300px, calc((100vh - 200px) * 1.5), 600px);
     }
 
     .btn-main {
@@ -344,6 +375,10 @@
   <!-- 2번 요구사항: [배경 미리보기] 버튼 -->
   <div class="controls">
     <button id="btnStart" class="btn-main">📸 촬영 시작 (Space)</button>
+    <div class="orient" role="group" aria-label="사진 방향 고르기">
+      <button type="button" class="orient-btn active" data-orient="portrait" aria-pressed="true">▯ 세로</button>
+      <button type="button" class="orient-btn" data-orient="landscape" aria-pressed="false">▭ 가로</button>
+    </div>
     <button id="btnPreview" class="btn-sub">🔍 배경 미리보기</button>
   </div>
 
@@ -429,6 +464,74 @@
 
     let audioCtx = null;
     let capturedFrames = [];
+    let capturedOrientation = 'portrait';   // 찍을 때의 방향 (방향을 바꾸면 이전 사진은 지움)
+    let orientation = 'portrait';           // 'portrait'(세로 4×6) | 'landscape'(가로 6×4)
+
+    // 가로 프레임 오른쪽 빈 자리의 문구 위치(위쪽 반 기준. 아래쪽 반은 600px 아래에 똑같이)
+    //  cx,cy = 문구 3줄의 가운데, width = 글씨가 넘지 않아야 하는 폭
+    const LANDSCAPE_TEXT = {
+      school:  { cx: 1600, cy: 305, width: 330 },   // 깃발·풍선(위)과 가게·선물(아래) 사이
+      space:   { cx: 1595, cy: 300, width: 330 },   // 행성(위)과 로켓·토끼(아래) 사이
+      animals: { cx: 1595, cy: 318, width: 330 },   // 나뭇가지(위)와 동물들(아래) 사이
+      heart:   { cx: 1605, cy: 300, width: 250 }    // 하트 타원 안쪽 (폭이 좁음)
+    };
+
+    // 방향별 그림 배치. 가로는 세로 프레임의 사진 크기(485×655)를 눕힌 655×485 로 쓰고,
+    // 종이를 위아래로 반 잘라 두 명이 나눠 가짐 (반쪽마다 사진 2장 + 오른쪽에 문구 3줄)
+    function getLayout() {
+      if (orientation === 'landscape') {
+        const pw = CONFIG.photoHeight, ph = CONFIG.photoWidth;       // 655 x 485
+        const W = CONFIG.canvasHeight, H = CONFIG.canvasWidth;       // 1800 x 1200
+        const m = (H / 2 - ph) / 2;                                  // 위아래 여백 57.5 (반으로 잘라도 같음)
+        // 가로 프레임의 점선 안내선(왼쪽 x20 · 가운데 x728)에 맞춰 사진을 놓음: 왼쪽 여백 33, 두 사진 사이 40
+        const xA = 53, xB = 748;
+        const y0 = m, y1 = H / 2 + m;
+        // 프레임 오른쪽의 빈 자리(그림과 그림 사이) 가운데에 문구를 넣음. 테마마다 빈 자리가 조금씩 달라서 따로 정함
+        const t = LANDSCAPE_TEXT[currentTheme] || LANDSCAPE_TEXT.school;
+        return {
+          landscape: true, W, H, pw, ph,
+          positions: [{ x: xA, y: y0 }, { x: xB, y: y0 }, { x: xA, y: y1 }, { x: xB, y: y1 }],
+          photoMap: [0, 1, 0, 1],
+          banner: [{ cx: t.cx, cy: t.cy }, { cx: t.cx, cy: t.cy + H / 2 }],
+          textWidth: t.width
+        };
+      }
+      const pw = CONFIG.photoWidth, ph = CONFIG.photoHeight;
+      const W = CONFIG.canvasWidth, H = CONFIG.canvasHeight;
+      const col2X = W / 2 + CONFIG.marginLeft;
+      const row2Y = CONFIG.marginTop + ph + CONFIG.gapY;
+      return {
+        landscape: false, W, H, pw, ph,
+        positions: [
+          { x: CONFIG.marginLeft, y: CONFIG.marginTop }, { x: col2X, y: CONFIG.marginTop },
+          { x: CONFIG.marginLeft, y: row2Y },            { x: col2X, y: row2Y }
+        ],
+        photoMap: [0, 0, 1, 1],
+        banner: [{ cx: CONFIG.marginLeft + pw / 2 }, { cx: col2X + pw / 2 }],
+        textWidth: 330
+      };
+    }
+
+    // 세로 / 가로 고르기
+    function setOrientation(o) {
+      if (isRunning || o === orientation) return;
+      orientation = o;
+      capturedFrames = [];                       // 방향이 다른 이전 사진은 지움
+      document.body.classList.toggle('landscape', o === 'landscape');
+      document.querySelectorAll('.orient-btn').forEach(b => {
+        const on = b.dataset.orient === o;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', String(on));
+      });
+      drawPhotoStrip();
+    }
+    document.querySelector('.orient').addEventListener('click', (e) => {
+      const b = e.target.closest('.orient-btn');
+      if (b) setOrientation(b.dataset.orient);
+    });
+    function lockOrientButtons(lock) {
+      document.querySelectorAll('.orient-btn').forEach(b => { b.disabled = lock; });
+    }
     let isRunning = false;
 
     // 밝기 조절 이벤트
@@ -542,7 +645,9 @@
       }
       isRunning = true;
       btnStart.disabled = true;
+      lockOrientButtons(true);
       capturedFrames = [];
+      capturedOrientation = orientation;
       cutBadge.style.display = 'block';
 
       for (let cut = 1; cut <= CONFIG.cutCount; cut++) {
@@ -567,6 +672,7 @@
       modal.style.display = 'flex';
       isRunning = false;
       btnStart.disabled = false;
+      lockOrientButtons(false);
     }
 
     function captureCurrentFrame() {
@@ -574,19 +680,22 @@
       const vW = video.videoWidth || 1280;
       const vH = video.videoHeight || 720;
 
-      const targetRatio = CONFIG.photoWidth / CONFIG.photoHeight;
+      // 방향에 맞는 사진 크기 (세로 485×655 / 가로 655×485)
+      const L = getLayout();
+      const targetRatio = L.pw / L.ph;
       let sW = vH * targetRatio;
       let sH = vH;
-      let sX = (vW - sW) / 2;
-      let sY = 0;
+      if (sW > vW) { sW = vW; sH = vW / targetRatio; }
+      const sX = (vW - sW) / 2;
+      const sY = (vH - sH) / 2;
 
-      tempCanvas.width = CONFIG.photoWidth;
-      tempCanvas.height = CONFIG.photoHeight;
+      tempCanvas.width = L.pw;
+      tempCanvas.height = L.ph;
       const tCtx = tempCanvas.getContext('2d');
 
-      tCtx.translate(CONFIG.photoWidth, 0);
+      tCtx.translate(L.pw, 0);
       tCtx.scale(-1, 1);
-      tCtx.drawImage(video, sX, sY, sW, sH, 0, 0, CONFIG.photoWidth, CONFIG.photoHeight);
+      tCtx.drawImage(video, sX, sY, sW, sH, 0, 0, L.pw, L.ph);
 
       capturedFrames.push(tempCanvas);
     }
@@ -963,48 +1072,58 @@
       img.src = FRAME_FILES[theme];
     });
 
+    // 가로(1800x1200) 프레임: frames/ 폴더의 <테마>_landscape.webp 를 자동으로 사용
+    const FRAME_FILES_LANDSCAPE = {
+      school:  'frames/school_landscape.webp',
+      space:   'frames/space_landscape.webp',
+      animals: 'frames/animals_landscape.webp',
+      heart:   'frames/heart_landscape.webp'
+    };
+    const frameImagesLandscape = {};
+    Object.keys(FRAME_FILES_LANDSCAPE).forEach(theme => {
+      const img = new Image();
+      img.onload = () => { frameImagesLandscape[theme] = img; drawPhotoStrip(); };
+      img.src = FRAME_FILES_LANDSCAPE[theme];
+    });
+
     function drawPhotoStrip() {
+      const L = getLayout();
+      if (canvas.width !== L.W || canvas.height !== L.H) { canvas.width = L.W; canvas.height = L.H; }
       ctx.filter = "none";
 
-      // 배경 그림은 별도 레이어에 그린 뒤 '색연필 질감'을 입혀서 합침
-      const frameImg = frameImages[currentTheme];
+      const frameImg = (L.landscape ? frameImagesLandscape : frameImages)[currentTheme];
       const scene = SCENES[currentTheme] || SCENES.school;
-      const bgCtx = getBgLayer();
-      bgCtx.clearRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
+
       if (frameImg) {
         // 내 프레임 사진을 배경 전체로 사용
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-        ctx.drawImage(frameImg, 0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-      } else {
-        drawBottomScene(bgCtx, currentTheme);
-        ctx.fillStyle = scene.paper;
-        ctx.fillRect(0, 0, CONFIG.canvasWidth, CONFIG.canvasHeight);
-        // 하단으로 갈수록 테마색으로 번지는 배경
-        const g = ctx.createLinearGradient(0, 1250, 0, CONFIG.canvasHeight);
+        ctx.fillRect(0, 0, L.W, L.H);
+        ctx.drawImage(frameImg, 0, 0, L.W, L.H);
+      } else if (L.landscape) {
+        // 가로 프레임 파일이 없을 때: 테마 색의 단순한 배경
+        const g = ctx.createLinearGradient(0, 0, 0, L.H);
         g.addColorStop(0, scene.paper);
         g.addColorStop(1, scene.sky);
         ctx.fillStyle = g;
-        ctx.fillRect(0, 1250, CONFIG.canvasWidth, CONFIG.canvasHeight - 1250);
+        ctx.fillRect(0, 0, L.W, L.H);
+      } else {
+        // 세로 기본 그림 (프레임 파일이 없을 때): 색연필 질감 레이어에 그림
+        const bgCtx = getBgLayer();
+        bgCtx.clearRect(0, 0, L.W, L.H);
+        drawBottomScene(bgCtx, currentTheme);
+        ctx.fillStyle = scene.paper;
+        ctx.fillRect(0, 0, L.W, L.H);
+        const g = ctx.createLinearGradient(0, 1250, 0, L.H);
+        g.addColorStop(0, scene.paper);
+        g.addColorStop(1, scene.sky);
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 1250, L.W, L.H - 1250);
         compositePencilLayer();
       }
 
-      // 사각형 4컷 사진 렌더링 (A·A / B·B 배치)
-      const col2X = CONFIG.canvasWidth / 2 + CONFIG.marginLeft;
-      const row2Y = CONFIG.marginTop + CONFIG.photoHeight + CONFIG.gapY;
-      const positions = [
-        { x: CONFIG.marginLeft, y: CONFIG.marginTop },
-        { x: col2X,             y: CONFIG.marginTop },
-        { x: CONFIG.marginLeft, y: row2Y },
-        { x: col2X,             y: row2Y }
-      ];
+      const hasRealPhotos = capturedFrames.length === CONFIG.cutCount && capturedOrientation === orientation;
 
-      const hasRealPhotos = capturedFrames.length === CONFIG.cutCount;
-
-      // 윗줄 A·A / 아랫줄 B·B (가운데를 세로로 자르면 두 명이 같은 2컷을 나눠 가짐)
-      const photoMap = [0, 0, 1, 1];
-
-      positions.forEach((pos, index) => {
+      L.positions.forEach((pos, index) => {
         if (!frameImg) {
           // 기본 그림일 때만 사진 칸에 그림자를 줌 (내 프레임 사진을 쓸 땐 없음)
           ctx.save();
@@ -1013,65 +1132,67 @@
           ctx.shadowOffsetX = 0;
           ctx.shadowOffsetY = 4;
           ctx.fillStyle = "#ffffff";
-          ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.fillRect(pos.x, pos.y, L.pw, L.ph);
           ctx.restore();
         }
 
         ctx.save();
         ctx.beginPath();
-        ctx.rect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+        ctx.rect(pos.x, pos.y, L.pw, L.ph);
         ctx.clip();
 
         if (hasRealPhotos) {
           ctx.filter = photoFilter();
-          ctx.drawImage(capturedFrames[photoMap[index]], pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.drawImage(capturedFrames[L.photoMap[index]], pos.x, pos.y, L.pw, L.ph);
         } else {
           ctx.fillStyle = "#f6f8fb";
-          ctx.fillRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.fillRect(pos.x, pos.y, L.pw, L.ph);
           ctx.fillStyle = "#94a3b8";
           ctx.font = `34px ${APP_FONT}`;
           ctx.textAlign = "center";
-          ctx.fillText(`사진 ${photoMap[index] + 1} 들어가는 곳`, pos.x + CONFIG.photoWidth / 2, pos.y + CONFIG.photoHeight / 2);
+          ctx.fillText(`사진 ${L.photoMap[index] + 1} 들어가는 곳`, pos.x + L.pw / 2, pos.y + L.ph / 2);
         }
         ctx.restore();
 
         if (!frameImg) {
           ctx.strokeStyle = "#ffffff";
           ctx.lineWidth = 8;
-          ctx.strokeRect(pos.x, pos.y, CONFIG.photoWidth, CONFIG.photoHeight);
+          ctx.strokeRect(pos.x, pos.y, L.pw, L.ph);
         }
       });
 
-      // 하단 문구 렌더링
+      // 하단 문구 렌더링 (고척초등학교 / ♥기버데이♥ / 날짜 세 줄, 가운데 맞춤)
       ctx.textAlign = "center";
       ctx.textBaseline = "alphabetic";
-
       const mainTextColor = scene.main;
       const subTextColor  = scene.sub;
 
-      // 사진을 가운데로 잘라 두 명이 나눠 가져도 되도록, 왼쪽·오른쪽 사진 아래에 똑같은 문구를 넣음
-      const bannerCenters = [CONFIG.marginLeft + CONFIG.photoWidth / 2, col2X + CONFIG.photoWidth / 2];
-      const maxTextWidth = 330;
       const fitText = (str, size, weight) => {
         ctx.font = `${weight} ${size}px ${APP_FONT}`;
-        while (ctx.measureText(str).width > maxTextWidth && size > 24) {
+        while (ctx.measureText(str).width > L.textWidth && size > 24) {
           size -= 2;
           ctx.font = `${weight} ${size}px ${APP_FONT}`;
         }
       };
-      bannerCenters.forEach((cx) => {
+      // 세로: 사진 아래 / 가로: 사진 옆(오른쪽). 종이를 반으로 잘라도 양쪽에 똑같이 들어감
+      L.banner.forEach((b) => {
+        // 가로는 빈 자리의 높이(약 220px)가 좁아서 글씨를 조금 줄임 (40 / 54 / 34)
+        const sz = L.landscape ? [40, 54, 34] : [44, 60, 38];
+        const y1 = L.landscape ? b.cy - 40 : 1588;
+        const y2 = L.landscape ? b.cy + 22 : 1654;
+        const y3 = L.landscape ? b.cy + 68 : 1706;
         ctx.fillStyle = mainTextColor;
-        fitText("고척초등학교", 44, "bold");
-        ctx.fillText("고척초등학교", cx, 1588);
-        fitText("♥기버데이♥", 60, "bold");
-        ctx.fillText("♥기버데이♥", cx, 1654);
+        fitText("고척초등학교", sz[0], "bold");
+        ctx.fillText("고척초등학교", b.cx, y1);
+        fitText("♥기버데이♥", sz[1], "bold");
+        ctx.fillText("♥기버데이♥", b.cx, y2);
 
         ctx.fillStyle = subTextColor;
-        fitText("2026.11.19", 38, "bold");
-        ctx.fillText("2026.11.19", cx, 1706);
+        fitText("2026.11.19", sz[2], "bold");
+        ctx.fillText("2026.11.19", b.cx, y3);
 
-        // 학교 로고 (logo.png 가 있으면 문구 위에 자동 삽입)
-        drawSchoolLogo(ctx, cx);
+        // 학교 로고 (logo.png 가 있으면 세로 모드에서 문구 위에 삽입)
+        if (!L.landscape) drawSchoolLogo(ctx, b.cx);
       });
 
       ctx.filter = "none";
@@ -1114,7 +1235,18 @@
       isPrinting = true;
       try {
         // 1) 인쇄할 이미지가 완전히 준비될 때까지 기다림 (빈 종이 방지)
-        printTarget.src = canvasToPNG(canvas);
+        // 프린터에는 용지를 세로로만 넣으므로, 가로 사진은 90도 돌려서 세로 용지(4×6)에 인쇄
+        let printSource = canvas;
+        if (orientation === 'landscape') {
+          printSource = document.createElement('canvas');
+          printSource.width = canvas.height;
+          printSource.height = canvas.width;
+          const pc = printSource.getContext('2d');
+          pc.translate(printSource.width, 0);
+          pc.rotate(Math.PI / 2);
+          pc.drawImage(canvas, 0, 0);
+        }
+        printTarget.src = canvasToPNG(printSource);
         try { await printTarget.decode(); } catch (err) { /* 준비 확인이 안 되는 브라우저는 그냥 진행 */ }
         // 2) 기다림 화면 없이 바로 처음 화면으로
         modal.style.display = 'none';
