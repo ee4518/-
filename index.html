@@ -310,6 +310,7 @@
 
     @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+    .modal-head { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
     .modal-title { margin: 0; font-size: 18px; color: #f1f5f9; text-align: center; }
 
     @page { size: 4in 6in; margin: 0; }
@@ -387,7 +388,14 @@
   <div id="resultModal" class="modal">
     <div class="modal-content">
       <!-- 사진을 찍기 전(배경만 보기)과 찍은 뒤(인쇄)에 안내 문구와 버튼이 달라짐 -->
-      <p id="modalTitle" class="modal-title"></p>
+      <div class="modal-head">
+        <p id="modalTitle" class="modal-title"></p>
+        <!-- 사진을 찍기 전(배경 미리보기)에만 보임. 찍은 뒤에는 방향을 바꾸면 사진이 지워지므로 숨김 -->
+        <div id="modalOrient" class="orient" role="group" aria-label="사진 방향 고르기">
+          <button type="button" class="orient-btn active" data-orient="portrait" aria-pressed="true">▯ 세로</button>
+          <button type="button" class="orient-btn" data-orient="landscape" aria-pressed="false">▭ 가로</button>
+        </div>
+      </div>
       <!-- 팝업 내부에서 원하는 배경을 클릭해 전환 -->
       <div class="option-group" style="margin-bottom: 2px;">
         <span style="font-size: 16px; color: #e2e8f0;">🎨 배경 선택:</span>
@@ -531,17 +539,21 @@
       orientation = o;
       capturedFrames = [];                       // 방향이 다른 이전 사진은 지움
       document.body.classList.toggle('landscape', o === 'landscape');
+      syncOrientButtons();
+      drawPhotoStrip();
+    }
+    // 화면의 세로/가로 버튼과 팝업 안의 세로/가로 버튼을 같은 상태로 맞춤
+    function syncOrientButtons() {
       document.querySelectorAll('.orient-btn').forEach(b => {
-        const on = b.dataset.orient === o;
+        const on = b.dataset.orient === orientation;
         b.classList.toggle('active', on);
         b.setAttribute('aria-pressed', String(on));
       });
-      drawPhotoStrip();
     }
-    document.querySelector('.orient').addEventListener('click', (e) => {
+    document.querySelectorAll('.orient').forEach(group => group.addEventListener('click', (e) => {
       const b = e.target.closest('.orient-btn');
       if (b) setOrientation(b.dataset.orient);
-    });
+    }));
     function lockOrientButtons(lock) {
       document.querySelectorAll('.orient-btn').forEach(b => { b.disabled = lock; });
     }
@@ -597,6 +609,8 @@
         : '🔍 배경 미리보기 (사진을 찍은 뒤에 인쇄할 수 있어요)';
       document.querySelector('.copies').style.display = has ? 'flex' : 'none';
       document.getElementById('btnPrint').style.display = has ? '' : 'none';
+      document.getElementById('modalOrient').style.display = has ? 'none' : '';
+      syncOrientButtons();
     }
     function openModal() {
       drawPhotoStrip();
